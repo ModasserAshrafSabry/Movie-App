@@ -2,10 +2,13 @@
 
 📌 Description :
 Movie Discovery App - An Android application for discovering movies — Built with Kotlin.
+
 Users can:
 - Browse popular films
 - View detailed information
 - Search for specific titles  
+
+
 Team Members :
 - Ahmed Hany (Leader)  
 - Mahmoud Khaled  
