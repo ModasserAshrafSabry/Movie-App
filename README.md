@@ -2,7 +2,6 @@
 
 📌 Description :
 Movie Discovery App - An Android application for discovering movies — Built with Kotlin.
-
 Users can:
 - Browse popular films
 - View detailed information
