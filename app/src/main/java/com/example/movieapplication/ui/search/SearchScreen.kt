@@ -1,6 +1,5 @@
 package com.example.movieapp.ui.search
 
-// ✅ استيراد الأدوات الأساسية من Jetpack Compose
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,122 +18,137 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import com.example.movieapp.data.MovieRepository
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.movieapp.R
 import com.example.movieapp.model.Movie
+import com.example.movieapp.model.Celebrity
 import com.example.movieapp.ui.home.HomeViewModel
-import kotlinx.coroutines.launch
+import com.example.movieapplication.ui.viewmodel.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    viewModel: HomeViewModel, // 💡 علشان نقدر نتعامل مع الـ Watchlist
-    onBackClick: () -> Unit = {}, // زر الرجوع
-    onMovieClick: (Movie) -> Unit = {} // لما المستخدم يضغط على فيلم
+    searchViewModel: SearchViewModel = viewModel(),
+    viewModel: HomeViewModel,
+    onBackClick: () -> Unit = {},
+    onMovieClick: (Movie) -> Unit = {},
+    onCelebrityClick: (Celebrity) -> Unit = {}
 ) {
-    val repository = remember { MovieRepository() } // ⚙️ إنشاء Repository للبحث
-    val coroutineScope = rememberCoroutineScope() // لإطلاق عمليات غير متزامنة (Coroutines)
+    val query by searchViewModel.query
+    val suggestions by searchViewModel.suggestions
+    val showSuggestions by searchViewModel.showSuggestions
+    val movieSearchResults by searchViewModel.movieSearchResults
+    val celebSearchResults by searchViewModel.celebSearchResults
+    val isLoading by searchViewModel.isLoading
+    val errorMsg by searchViewModel.errorMsg
 
-    // 🧩 حالة واجهة المستخدم
-    var query by remember { mutableStateOf("") } // النص المكتوب في مربع البحث
-    var searchResults by remember { mutableStateOf<List<Movie>>(emptyList()) } // النتائج
-    var isLoading by remember { mutableStateOf(false) } // حالة التحميل
-    var errorMsg by remember { mutableStateOf<String?>(null) } // رسالة الخطأ
-
-    // 📡 مراقبة قائمة المشاهدة
     val watchlist by viewModel.watchlist.collectAsState(initial = emptyList())
 
-    // 🎨 واجهة المستخدم
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
             .padding(16.dp)
     ) {
-
-        // 🔙 عنوان الشاشة وزر الرجوع
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBackClick) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
             }
             Text(
-                text = "Search Movies",
+                text = "Search",
                 color = Color.White,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
-        // 🔍 مربع البحث
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it }, // تحديث النص أثناء الكتابة
-            placeholder = { Text("Search for a movie...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    // لما المستخدم يضغط Enter في الكيبورد
-                    if (query.isBlank()) return@KeyboardActions
-                    coroutineScope.launch {
-                        isLoading = true
-                        errorMsg = null
-                        try {
-                            val response = repository.searchMovies(query.trim())
-                            searchResults = response.results // ✅ حفظ النتائج
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            errorMsg = "Something went wrong. Please try again."
-                            searchResults = emptyList()
-                        } finally {
-                            isLoading = false
+        Box {
+            Column {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { searchViewModel.onQueryChanged(it) },
+                    placeholder = { Text("Search for a movie or Celebrity...") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    trailingIcon = {
+                        if (query.isNotEmpty()) {
+                            IconButton(onClick = { searchViewModel.clearAll() }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Clear", tint = Color.Gray)
+                            }
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(
+                        onSearch = { searchViewModel.performSearch() }
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(30.dp)),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = Color(0xFF1E1E1E),
+                        unfocusedContainerColor = Color(0xFF1E1E1E),
+                        cursorColor = Color.White,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.Gray
+                    ),
+                    singleLine = true
+                )
+                if (showSuggestions && suggestions.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF2C2C2E)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column {
+                            suggestions.forEach { suggestion ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            searchViewModel.onSuggestionClicked(suggestion)
+                                        }
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        contentDescription = null,
+                                        tint = Color.Gray,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(
+                                        text = suggestion,
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                if (suggestion != suggestions.last()) {
+                                    Divider(color = Color.DarkGray, thickness = 0.5.dp)
+                                }
+                            }
                         }
                     }
                 }
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(30.dp)),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                focusedContainerColor = Color(0xFF1E1E1E),
-                unfocusedContainerColor = Color(0xFF1E1E1E),
-                cursorColor = Color.White,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White
-            ),
-            singleLine = true
-        )
+            }
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 🔘 زر البحث
         Button(
-            onClick = {
-                if (query.isBlank()) return@Button
-                coroutineScope.launch {
-                    isLoading = true
-                    errorMsg = null
-                    try {
-                        val response = repository.searchMovies(query.trim())
-                        searchResults = response.results
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        errorMsg = "Something went wrong. Please try again."
-                        searchResults = emptyList()
-                    } finally {
-                        isLoading = false
-                    }
-                }
-            },
+            onClick = { searchViewModel.performSearch() },
             modifier = Modifier.align(Alignment.End),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
         ) {
@@ -143,18 +157,14 @@ fun SearchScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 🔄 عرض الحالات المختلفة (تحميل / خطأ / نتائج)
         when {
             isLoading -> {
-                // 🌀 حالة التحميل
                 CircularProgressIndicator(
                     color = Color.White,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
             }
-
             errorMsg != null -> {
-                // ⚠️ حالة الخطأ
                 Text(
                     text = errorMsg ?: "",
                     color = Color.Red,
@@ -164,75 +174,129 @@ fun SearchScreen(
                     textAlign = TextAlign.Center
                 )
             }
-
-            searchResults.isNotEmpty() -> {
-                // ✅ عرض النتائج في قائمة
+            movieSearchResults.isNotEmpty() || celebSearchResults.isNotEmpty() -> {
                 LazyColumn {
-                    items(searchResults) { movie ->
-                        val inWatchlist = watchlist.any { it.id == movie.id } // تحقق هل الفيلم مضاف
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp)
-                                .clickable { onMovieClick(movie) },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // 🖼️ صورة الفيلم
-                            val posterUrl = movie.posterPath?.let {
-                                if (it.startsWith("/")) "https://image.tmdb.org/t/p/w500$it"
-                                else "https://image.tmdb.org/t/p/w500/$it"
-                            } ?: "https://via.placeholder.com/150x225?text=No+Image"
-
-                            Image(
-                                painter = rememberAsyncImagePainter(posterUrl),
-                                contentDescription = movie.title ?: "Movie poster",
-                                modifier = Modifier
-                                    .size(80.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
-                                contentScale = ContentScale.Crop
+                    if (movieSearchResults.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Movies",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(vertical = 8.dp)
                             )
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            // 🧾 بيانات الفيلم
-                            Column(
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    text = movie.title ?: "Untitled",
-                                    color = Color.White,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Text(
-                                    text = "⭐ ${movie.voteAverage ?: 0.0}",
-                                    color = Color.Gray,
-                                    fontSize = 14.sp
-                                )
-                            }
-
-                            // ➕ / ❌ زر الإضافة أو الإزالة من الـ Watchlist
-                            IconButton(
-                                onClick = {
-                                    if (inWatchlist) viewModel.removeFromWatchlist(movie)
-                                    else viewModel.addToWatchlist(movie)
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = if (inWatchlist) Icons.Default.Delete else Icons.Default.Add,
-                                    contentDescription = if (inWatchlist) "Remove from Watchlist" else "Add to Watchlist",
-                                    tint = if (inWatchlist) Color.Red else Color.White
-                                )
-                            }
                         }
-                        Divider(color = Color.DarkGray)
+                        items(movieSearchResults) { movie ->
+                            val inWatchlist = watchlist.any { it.id == movie.id }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp)
+                                    .clickable { onMovieClick(movie) },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val posterUrl = movie.posterPath?.let {
+                                    if (it.startsWith("/")) "https://image.tmdb.org/t/p/w500$it"
+                                    else "https://image.tmdb.org/t/p/w500/$it"
+                                }
+                                Image(
+                                    painter = if (posterUrl != null) {
+                                        rememberAsyncImagePainter(posterUrl)
+                                    } else {
+                                        painterResource(id = R.drawable.no_image)
+                                    },
+                                    contentDescription = movie.title ?: "Movie poster",
+                                    modifier = Modifier
+                                        .size(80.dp)
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = movie.title ?: "Untitled",
+                                        color = Color.White,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = "⭐ ${String.format("%.2f", movie.voteAverage ?: 0.0)}",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        if (inWatchlist) viewModel.removeFromWatchlist(movie)
+                                        else viewModel.addToWatchlist(movie)
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = if (inWatchlist) Icons.Default.Delete else Icons.Default.Add,
+                                        contentDescription = if (inWatchlist) "Remove" else "Add",
+                                        tint = if (inWatchlist) Color.Red else Color.White
+                                    )
+                                }
+                            }
+                            Divider(color = Color.DarkGray)
+                        }
+                    }
+                    if (celebSearchResults.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Celebrities",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        }
+                        items(celebSearchResults) { celebrity ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp)
+                                    .clickable { onCelebrityClick(celebrity) },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val profileUrl = celebrity.profilePath?.let {
+                                    if (it.startsWith("/")) "https://image.tmdb.org/t/p/w500$it"
+                                    else "https://image.tmdb.org/t/p/w500/$it"
+                                }
+                                Image(
+                                    painter = if (profileUrl != null) {
+                                        rememberAsyncImagePainter(profileUrl)
+                                    } else {
+                                        painterResource(id = R.drawable.no_image)
+                                    },
+                                    contentDescription = celebrity.name ?: "Celebrity",
+                                    modifier = Modifier
+                                        .size(80.dp)
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = celebrity.name ?: "Unknown",
+                                        color = Color.White,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        maxLines = 2
+                                    )
+                                    Text(
+                                        text = celebrity.role ?: "Unknown",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                            }
+                            Divider(color = Color.DarkGray)
+                        }
                     }
                 }
             }
-
             query.isNotEmpty() -> {
-                // 😔 لا توجد نتائج
                 Text(
                     text = "😔 No results found for \"$query\"",
                     color = Color.Gray,
@@ -243,11 +307,9 @@ fun SearchScreen(
                         .padding(top = 50.dp)
                 )
             }
-
             else -> {
-                // 📭 لم يتم البحث بعد
                 Text(
-                    text = "Type a movie name and press Search",
+                    text = "Type a name and press Search",
                     color = Color.Gray,
                     modifier = Modifier
                         .fillMaxWidth()

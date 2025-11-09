@@ -76,7 +76,12 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     val json = gson.toJson(movie)
                     val encoded = Uri.encode(json)
                     navController.navigate("details/$encoded")
-                }
+                },
+                onCelebrityClick = { celebrity ->
+                    val json = gson.toJson(celebrity)
+                    val encoded = Uri.encode(json)
+                    navController.navigate("celebrityDetails/$encoded")
+                },
             )
         }
 

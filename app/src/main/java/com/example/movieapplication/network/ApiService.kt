@@ -1,5 +1,6 @@
 package com.example.movieapp.network
 
+import com.example.movieapp.model.Celebrity
 import com.example.movieapp.model.MovieResponse
 import com.example.movieapp.model.CelebrityResponse
 import retrofit2.http.GET
@@ -26,4 +27,10 @@ interface ApiService {
         @Query("api_key") apiKey: String,
         @Query("query") query: String // 🔤 الكلمة اللي بيبحث بيها المستخدم
     ): MovieResponse
+
+    @GET("search/person")
+    suspend fun searchCelebrities(
+        @Query("api_key") apiKey: String,
+        @Query("query") query: String // 🔤 الكلمة اللي بيبحث بيها المستخدم
+    ): CelebrityResponse
 }

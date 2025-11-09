@@ -44,7 +44,7 @@ fun HomeScreen(
     val watchlistMovies by viewModel.watchlist.collectAsState(initial = emptyList())
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    // 🎯 عرض Snackbar تلقائيًا عند تغيير الرسالة
+    //  عرض Snackbar تلقائيًا عند تغيير الرسالة
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let {
             snackbarHostState.showSnackbar(it)
@@ -180,7 +180,7 @@ fun HomeScreen(
             OutlinedTextField(
                 value = "",
                 onValueChange = {},
-                placeholder = { Text("Search for shows, movies") },
+                placeholder = { Text("Search for Movies , Celebrities..") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -306,6 +306,7 @@ fun MovieItem(
         )
     }
 }
+
 @Composable
 fun CelebrityItem(celeb: Celebrity, onClick: (Celebrity) -> Unit) {
     val profileUrl = celeb.profilePath?.let {
@@ -347,6 +348,8 @@ fun CelebrityItem(celeb: Celebrity, onClick: (Celebrity) -> Unit) {
         )
     }
 }
+
+
 @Composable
 fun WatchlistItem(
     movieEntity: MovieEntity,

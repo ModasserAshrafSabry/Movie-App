@@ -18,16 +18,6 @@ class MovieRepository {
         return try {
             // 🛰️ استدعاء دالة من ApiService لجيب بيانات الأفلام
             val response = apiService.getTrendingMovies(BuildConfig.TMDB_API_KEY)
-
-            // 🪵 Log لعدد الأفلام اللي تم جلبها
-            Log.d("MoviesCheck", "Fetched ${response.results.size} trending movies")
-
-            // 🪵 Log لأسماء أول 5 أفلام
-            response.results.take(5).forEach {
-                Log.d("MoviesCheck", "Movie: ${it.title}, Poster: ${it.posterPath}, Backdrop: ${it.backdropPath}")
-            }
-
-            // ✅ ترجع النتائج
             response
 
         } catch (e: Exception) {
@@ -42,13 +32,6 @@ class MovieRepository {
         return try {
             val response = apiService.getTrendingCelebrities(BuildConfig.TMDB_API_KEY)
 
-            Log.d("MoviesCheck", "Fetched ${response.results.size} celebrities")
-
-            // 🪵 Log لأول 5 مشاهير
-            response.results.take(5).forEach {
-                Log.d("MoviesCheck", "Celebrity: ${it.name}, Profile: ${it.profilePath}")
-            }
-
             response
 
         } catch (e: Exception) {
@@ -60,5 +43,8 @@ class MovieRepository {
     // 🧩 دالة بحث عن أفلام
     suspend fun searchMovies(query: String): MovieResponse {
         return apiService.searchMovies(BuildConfig.TMDB_API_KEY, query)
+    }
+    suspend fun searchCelebrities(query: String): CelebrityResponse {
+        return apiService.searchCelebrities(BuildConfig.TMDB_API_KEY, query)
     }
 }
