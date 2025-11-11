@@ -111,8 +111,14 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     navController.navigate("celebrityDetails/$encoded")
                 },
                 onSeeAllClick = { type ->
-                    navController.navigate("SeeAllScreen?contentType=$type")
+                    if (type.startsWith("genre_")) {
+                        val genreId = type.removePrefix("genre_").toIntOrNull() ?: 0
+                        navController.navigate("moviesByGenre/$genreId")
+                    } else {
+                        navController.navigate("SeeAllScreen?contentType=$type")
+                    }
                 }
+
 
             )
         }
