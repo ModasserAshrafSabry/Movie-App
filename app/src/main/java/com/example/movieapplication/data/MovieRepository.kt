@@ -7,13 +7,9 @@ import com.example.movieapp.network.ApiService
 import com.example.movieapp.network.RetrofitInstance
 import com.example.movieapp.BuildConfig
 
-// 🎯 مسؤول عن جلب البيانات من API (الأفلام والمشاهير)
 class MovieRepository {
 
-    // ✅ إنشاء instance من ApiService اللي فيه دوال الاتصال بالسيرفر
     private val apiService: ApiService = RetrofitInstance.api
-
-    // 🧩 دالة تجيب الأفلام التريندينج من السيرفر
     suspend fun getTrendingMovies(): MovieResponse? {
         return try {
             // 🛰️ استدعاء دالة من ApiService لجيب بيانات الأفلام
@@ -26,6 +22,31 @@ class MovieRepository {
             null
         }
     }
+
+    suspend fun getPopularMovies(): MovieResponse? {
+        return try {
+            val response = apiService.getPopularMovies(BuildConfig.TMDB_API_KEY)
+            response
+        } catch (e:Exception) {
+            Log.e("MoviesCheck", "Error fetching movies: ${e.message}")
+            null
+        }
+    }
+
+
+    suspend fun getMovieByGenre(genreId: Int): MovieResponse? {
+        return try {
+            val response = apiService.getMovieByGenre(
+                apiKey = BuildConfig.TMDB_API_KEY,
+                genreId = genreId
+            )
+            response
+        } catch (e: Exception) {
+            Log.e("MoviesCheck", "Error fetching movies by genre: ${e.message}")
+            null
+        }
+    }
+
 
     // 🧩 دالة تجيب المشاهير التريندينج
     suspend fun getTrendingCelebrities(): CelebrityResponse? {

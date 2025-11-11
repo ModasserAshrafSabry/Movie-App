@@ -29,7 +29,7 @@ class HomeViewModel(
     init {
         fetchTrendingData()
     }
-    // 🧠 تحميل البيانات من الـ API
+
     private fun fetchTrendingData() {
         viewModelScope.launch {
             try {

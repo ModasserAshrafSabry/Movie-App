@@ -1,10 +1,16 @@
 package com.example.movieapplication.ui.viewmodel
+
+import android.media.ToneGenerator
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.movieapp.model.Movie
 import com.example.movieapp.model.Celebrity
 import com.example.movieapp.data.MovieRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class SearchViewModel : ViewModel() {
@@ -17,7 +23,18 @@ class SearchViewModel : ViewModel() {
     var errorMsg = mutableStateOf<String?>(null)
     var userClickedSuggestion = mutableStateOf(false)
 
+    private val _popularMovies = MutableStateFlow<List<Movie>>(emptyList())
+    val popularMovies: StateFlow<List<Movie>> = _popularMovies.asStateFlow()
+
+        private val _MoviesByGenre = MutableStateFlow<List<Movie>>(emptyList())
+        val MoviesByGenre: StateFlow<List<Movie>> = _MoviesByGenre.asStateFlow()
+
     private val repository = MovieRepository()
+
+    init {
+        fetchPopularMovies()
+    }
+
 
     fun onQueryChanged(newQuery: String) {
         query.value = newQuery
@@ -82,4 +99,26 @@ class SearchViewModel : ViewModel() {
         showSuggestions.value = false
         errorMsg.value = null
     }
+
+    fun fetchPopularMovies() {
+        viewModelScope.launch {
+            try {
+                _popularMovies.value = repository.getPopularMovies()?.results ?: emptyList()
+            } catch (e: Exception) {
+                Log.e("SearchViewModel", "Error fetching Popular data: ${e.message}")
+            }
+        }
+    }
+
+    fun OnGenreSelected(genreId: Int) {
+        viewModelScope.launch {
+            try {
+                _MoviesByGenre.value = repository.getMovieByGenre(genreId)?.results ?: emptyList()
+                Log.d("SearchViewModel", "Fetched ${_MoviesByGenre.value.size} movies for genreId $genreId")
+            } catch (e: Exception) {
+                Log.e("SearchViewModel", "Error fetching movies by genre: ${e.message}")
+            }
+        }
+    }
+
 }

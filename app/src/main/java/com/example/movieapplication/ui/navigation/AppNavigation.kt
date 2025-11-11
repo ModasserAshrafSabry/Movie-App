@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,13 +19,39 @@ import com.example.movieapp.ui.home.HomeScreen
 import com.example.movieapp.ui.home.HomeViewModel
 import com.example.movieapp.ui.search.SearchScreen
 import com.example.movieapp.ui.watchlist.WatchlistScreen
+import com.example.movieapplication.ui.Genre
+import com.example.movieapplication.ui.GenresScreen
+import com.example.movieapplication.ui.MovieGridScreen
+import com.example.movieapplication.ui.viewmodel.SearchViewModel
 import com.google.gson.Gson
+
+
+val genreList = listOf(
+    Genre(28, "Action"),
+    Genre(12, "Adventure"),
+    Genre(16, "Animation"),
+    Genre(35, "Comedy"),
+    Genre(80, "Crime"),
+    Genre(99, "Documentary"),
+    Genre(18, "Drama"),
+    Genre(10751, "Family"),
+    Genre(14, "Fantasy"),
+    Genre(36, "History"),
+    Genre(27, "Horror"),
+    Genre(10402, "Music"),
+    Genre(9648, "Mystery"),
+    Genre(10749, "Romance"),
+    Genre(878, "Science Fiction"),
+    Genre(53, "Thriller"),
+    Genre(10770, "TV Movie"),
+    Genre(10752, "War"),
+    Genre(37, "Western")
+)
 
 @Composable
 fun AppNavigation(viewModel: HomeViewModel) {
     val navController = rememberNavController()
     val gson = Gson()
-
     val trendingMovies = viewModel.trendingMovies.collectAsState().value
 
     NavHost(
@@ -57,7 +84,8 @@ fun AppNavigation(viewModel: HomeViewModel) {
             "details/{movieJson}",
             arguments = listOf(navArgument("movieJson") { type = NavType.StringType })
         ) { backStackEntry ->
-            val movieJsonEncoded = backStackEntry.arguments?.getString("movieJson") ?: return@composable
+            val movieJsonEncoded =
+                backStackEntry.arguments?.getString("movieJson") ?: return@composable
             val movieJson = Uri.decode(movieJsonEncoded)
             val movie = decodeMovieJson(movieJson, gson) ?: return@composable
 
@@ -82,6 +110,10 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     val encoded = Uri.encode(json)
                     navController.navigate("celebrityDetails/$encoded")
                 },
+                onSeeAllClick = { type ->
+                    navController.navigate("SeeAllScreen?contentType=$type")
+                }
+
             )
         }
 
@@ -99,14 +131,67 @@ fun AppNavigation(viewModel: HomeViewModel) {
             )
         }
 
-        // 🌟 تفاصيل المشاهير
+        composable(
+            route = "SeeAllScreen?contentType={contentType}",
+            arguments = listOf(navArgument("contentType") {
+                defaultValue = "movies"
+                nullable = true
+            })
+        ) { backStackEntry ->
+            val contentType = backStackEntry.arguments?.getString("contentType") ?: "movies"
+            val searchViewModel: SearchViewModel = viewModel()
+
+            when (contentType) {
+                "movies" -> {
+                    MovieGridScreen(
+                        genreId = 0,
+                        searchViewModel = searchViewModel,
+                        onMovieClick = { movie ->
+                            val json = gson.toJson(movie)
+                            val encoded = Uri.encode(json)
+                            navController.navigate("details/$encoded")
+                        }
+                    )
+                }
+
+                "genres" -> {
+                    GenresScreen(
+                        genres = genreList,
+                        onGenreSelected = { genre ->
+                            navController.navigate("moviesByGenre/${genre.id}")
+                        }
+                    )
+                }
+            }
+        }
+        composable(
+            route = "moviesByGenre/{genreId}",
+            arguments = listOf(navArgument("genreId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val genreId = backStackEntry.arguments?.getInt("genreId") ?: 0
+            val searchViewModel: SearchViewModel = viewModel()
+
+            MovieGridScreen(
+                genreId = genreId,
+                searchViewModel = searchViewModel,
+                onMovieClick = { movie ->
+                    val json = gson.toJson(movie)
+                    val encoded = Uri.encode(json)
+                    navController.navigate("details/$encoded")
+                }
+            )
+        }
+
         composable(
             "celebrityDetails/{celebrityJson}",
             arguments = listOf(navArgument("celebrityJson") { type = NavType.StringType })
         ) { backStackEntry ->
-            val celebJsonEncoded = backStackEntry.arguments?.getString("celebrityJson") ?: return@composable
+            val celebJsonEncoded =
+                backStackEntry.arguments?.getString("celebrityJson") ?: return@composable
             val celebJson = Uri.decode(celebJsonEncoded)
-            val celebrity = runCatching { gson.fromJson(celebJson, Celebrity::class.java) }.getOrNull() ?: return@composable
+            val celebrity =
+                runCatching { gson.fromJson(celebJson, Celebrity::class.java) }.getOrNull()
+                    ?: return@composable
 
             CelebrityDetailsScreen(
                 celebrity = celebrity,
@@ -115,6 +200,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
         }
     }
 }
+
 
 // 🧠 دالة بتحول JSON إلى Movie أو MovieEntity
 private fun decodeMovieJson(json: String, gson: Gson): Movie? {

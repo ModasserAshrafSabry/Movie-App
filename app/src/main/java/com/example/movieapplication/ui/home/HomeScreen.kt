@@ -44,7 +44,7 @@ fun HomeScreen(
     val watchlistMovies by viewModel.watchlist.collectAsState(initial = emptyList())
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    //  عرض Snackbar تلقائيًا عند تغيير الرسالة
+
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let {
             snackbarHostState.showSnackbar(it)
@@ -71,7 +71,7 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .padding(bottom = 12.dp)
         ) {
-            // 🧭 العنوان الرئيسي
+            //  العنوان الرئيسي
             Text(
                 text = "Discover Movies",
                 color = Color.White,
@@ -79,6 +79,7 @@ fun HomeScreen(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(16.dp)
             )
+
             // 🎬 اللافتة الدعائية
             if (trendingMovies.isNotEmpty()) {
                 val topMovie = trendingMovies.first()

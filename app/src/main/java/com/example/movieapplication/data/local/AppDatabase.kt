@@ -10,7 +10,6 @@ import androidx.room.RoomDatabase
 abstract class
 AppDatabase : RoomDatabase() {
 
-    // 🔗 دالة بترجع DAO الخاص بإدارة watchlist
     abstract fun watchlistDao(): WatchlistDao
 
     companion object {

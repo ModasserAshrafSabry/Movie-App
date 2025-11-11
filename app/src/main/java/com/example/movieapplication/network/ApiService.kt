@@ -1,18 +1,26 @@
 package com.example.movieapp.network
 
-import com.example.movieapp.model.Celebrity
 import com.example.movieapp.model.MovieResponse
 import com.example.movieapp.model.CelebrityResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-// 🎯 واجهة Retrofit لتحديد طلبات API
 interface ApiService {
 
-    // 🎬 جلب الأفلام التريندينج
     @GET("trending/movie/week")
     suspend fun getTrendingMovies(
-        @Query("api_key") apiKey: String // 🔑 مفتاح API من TMDB
+        @Query("api_key") apiKey: String
+    ): MovieResponse
+
+    @GET("movie/popular")
+    suspend fun getPopularMovies(
+        @Query("api_key") apiKey: String
+    ): MovieResponse
+
+    @GET("discover/movie")
+    suspend fun getMovieByGenre(
+        @Query("api_key") apiKey: String,
+        @Query("with_genres") genreId: Int
     ): MovieResponse
 
     // 🌟 جلب المشاهير التريندينج
