@@ -2,13 +2,21 @@ package com.example.movieapp.model
 
 import com.google.gson.annotations.SerializedName
 
-// 🎯 تمثل كائن "فيلم" راجع من API
 data class Movie(
-    val id: Int,                        // 🆔 رقم الفيلم
-    val title: String?,                 // 🎬 اسم الفيلم
-    val overview: String?,              // 📝 ملخص الفيلم
-    @SerializedName("poster_path") val posterPath: String?,   // 🖼️ رابط بوستر الفيلم
-    @SerializedName("backdrop_path") val backdropPath: String?, // 🎞️ خلفية الفيلم
-    @SerializedName("vote_average") val voteAverage: Double?, // ⭐ متوسط التقييم
-    @SerializedName("release_date") val releaseDate: String?  // 📅 تاريخ الإصدار
+    val id: Int,
+    val title: String?,
+    val overview: String?,
+    @SerializedName("poster_path") val posterPath: String?,
+    @SerializedName("vote_average") val voteAverage: Double?,
+    @SerializedName("backdrop_path") val backdropPath: String?,
+    @SerializedName("release_date") val releaseDate: String?,
 )
+
+data class CastMember(
+    val id: Int,
+    val name: String,
+    val character: String,
+    val profile_path: String?,
+    val order: Int
+)
+

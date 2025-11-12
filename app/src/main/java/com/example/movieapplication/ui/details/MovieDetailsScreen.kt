@@ -119,7 +119,7 @@ fun MovieDetailsScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ➕ زر إضافة لقائمة المشاهدة
+
         Button(
             onClick = {
                 scope.launch {

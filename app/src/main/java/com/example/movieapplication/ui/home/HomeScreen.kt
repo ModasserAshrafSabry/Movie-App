@@ -1,4 +1,5 @@
 package com.example.movieapp.ui.home
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,29 +16,43 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.compose.ui.platform.InspectableModifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import coil.compose.rememberAsyncImagePainter
 import com.example.movieapp.data.local.MovieEntity
 import com.example.movieapp.model.Celebrity
 import com.example.movieapp.model.Movie
 import kotlinx.coroutines.launch
+
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
     onMovieClick: (Movie) -> Unit = {},
     onCelebrityClick: (Celebrity) -> Unit = {},
     onSearchClick: () -> Unit = {},
-    onViewAllClick: () -> Unit = {}
+    onViewAllClick: () -> Unit = {},
+    onSeeAllClicked: (String) -> Unit = {},
+    onCelebSeeAllClick: (String) -> Unit = {}
 ) {
     val trendingMovies by viewModel.trendingMovies.collectAsState()
     val trendingCelebrities by viewModel.trendingCelebrities.collectAsState()
@@ -66,19 +81,13 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(
+                    color = Color.Black
+                )
                 .verticalScroll(rememberScrollState())
-                .padding(paddingValues)
                 .padding(bottom = 12.dp)
         ) {
-            //  العنوان الرئيسي
-            Text(
-                text = "Discover Movies",
-                color = Color.White,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(16.dp)
-            )
+
 
             // 🎬 اللافتة الدعائية
             if (trendingMovies.isNotEmpty()) {
@@ -87,175 +96,302 @@ fun HomeScreen(
                     if (it.startsWith("/")) "https://image.tmdb.org/t/p/w500$it"
                     else "https://image.tmdb.org/t/p/w500/$it"
                 } ?: "https://via.placeholder.com/500x300?text=No+Image"
+                val posterUrl = topMovie.posterPath?.let {
+                    if (it.startsWith("/")) "https://image.tmdb.org/t/p/w200$it"
+                    else "https://image.tmdb.org/t/p/w200/$it"
+                } ?: "https://via.placeholder.com/100x150?text=No+Image"
                 val isInWatchlist = watchlistMovies.any { it.id == topMovie.id }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(260.dp)
-                        .padding(horizontal = 16.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { onMovieClick(topMovie) }
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(backdropUrl),
-                        contentDescription = topMovie.title ?: "Movie banner",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                        .height(410.dp)
+                        .clip(RoundedCornerShape(bottomEnd = 10.dp, bottomStart = 10.dp))
+                        .clickable { onMovieClick(topMovie) }) {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f))
-                                )
-                            )
-                    )
-                    // 🎞️ زر التشغيل
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Play Trailer",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(70.dp)
-                            .background(Color.White.copy(alpha = 0.25f), shape = CircleShape)
-                            .clip(CircleShape)
-                    )
-                    // ➕ / ❌ زر قائمة المشاهدة
-                    Icon(
-                        imageVector = if (isInWatchlist) Icons.Default.Close else Icons.Default.Add,
-                        contentDescription = "Toggle Watchlist",
-                        tint = if (isInWatchlist) Color.Red else Color.White,
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(10.dp)
-                            .size(28.dp)
-                            .clickable {
-                                if (isInWatchlist) {
-                                    viewModel.removeFromWatchlist(topMovie)
-                                } else {
-                                    viewModel.addToWatchlist(topMovie)
-                                }
-                            }
-                    )
-                    // 🧾 معلومات الفيلم
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .fillMaxWidth()
+                            .height(305.dp)
+                            .clickable { onMovieClick(topMovie) }
                     ) {
+                        // Trailer Image with top fade
                         Image(
-                            painter = rememberAsyncImagePainter(
-                                topMovie.posterPath?.let {
-                                    if (it.startsWith("/")) "https://image.tmdb.org/t/p/w200$it"
-                                    else "https://image.tmdb.org/t/p/w200/$it"
-                                } ?: "https://via.placeholder.com/100x150?text=No+Image"
-                            ),
-                            contentDescription = topMovie.title ?: "Movie Poster",
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(RoundedCornerShape(10.dp)),
+                            painter = rememberAsyncImagePainter(backdropUrl),
+                            contentDescription = topMovie.title ?: "Movie banner",
+                            modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Black.copy(alpha = 1f),
+                                            Color.Transparent
+                                        ),
+                                        startY = 40f,
+                                        endY = 300f
+                                    )
+                                )
+                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        listOf(Color.Transparent, Color.Black.copy(alpha = 1.5f))
+                                    )
+                                )
+                        )
+                        // Play Button Centered
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = "Play Trailer",
+                            tint = Color.White,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(64.dp)
+                                .background(Color.White.copy(alpha = 0.18f), shape = CircleShape)
+                                .clip(CircleShape)
+                        )
+                        // Poster Card Layered In Front
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .offset(x = 18.dp, y = 100.dp)
+                                .zIndex(2f)
+                        ) {
+                            Image(
+                                painter = rememberAsyncImagePainter(posterUrl),
+                                contentDescription = topMovie.title ?: "Movie Poster",
+                                modifier = Modifier
+                                    .size(width = 120.dp, height = 183.dp)
+                            )
+
+                            Icon(
+                                imageVector = if (isInWatchlist) Icons.Default.Close else Icons.Default.Add,
+                                contentDescription = "Toggle Watchlist",
+                                tint = if (isInWatchlist) Color.Red else Color.White,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(end = 1.dp, top = 4.dp)
+                                    .size(24.dp)
+                                    .clickable {
+                                        if (isInWatchlist) {
+                                            viewModel.removeFromWatchlist(topMovie)
+                                        } else {
+                                            viewModel.addToWatchlist(topMovie)
+                                        }
+                                    }
+                            )
+                        }
+                        // Title and rating in front of trailer
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .offset(x = 170.dp, y = 40.dp)
+                        ) {
                             Text(
                                 text = topMovie.title ?: "Untitled",
                                 color = Color.White,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 17.sp,
+                                maxLines = 2
                             )
-                            Text(
-                                text = "⭐ ${topMovie.voteAverage ?: 0.0}",
-                                color = Color.Yellow,
-                                fontSize = 14.sp
-                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Rating",
+                                    tint = Color.Yellow,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Text(
+                                    text = String.format("%.3f", topMovie.voteAverage ?: 0.0),
+                                    color = Color.Yellow,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
+
             // 🔍 البحث
             OutlinedTextField(
                 value = "",
                 onValueChange = {},
-                placeholder = { Text("Search for Movies , Celebrities..") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(30.dp))
+                placeholder = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Search for Movies, People.. ",
+                            style = LocalTextStyle.current.copy(textAlign = TextAlign.Center)
+                        )
+                    }
+                }, modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .width(300.dp)
+                    .align(alignment = CenterHorizontally)
                     .clickable { onSearchClick() },
+                shape = RoundedCornerShape(30.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color(0xFFE5DDDD),
+                    unfocusedBorderColor = Color(0xFFE3D8D8),
                     focusedContainerColor = Color(0xFF1E1E1E),
                     unfocusedContainerColor = Color(0xFF1E1E1E),
-                    cursorColor = Color.White
+                    cursorColor = Color.White,
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.Gray
                 ),
                 enabled = false
             )
-            Spacer(modifier = Modifier.height(12.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+
             // 🍿 الأفلام الشائعة
-            SectionTitle("Trending Movies Today")
-            LazyRow(modifier = Modifier.padding(vertical = 8.dp)) {
-                items(trendingMovies) { movie ->
-                    val isInWatchlist = watchlistMovies.any { it.id == movie.id }
-                    MovieItem(
-                        movie = movie,
-                        onClick = onMovieClick,
-                        onToggleWatchlist = {
-                            if (isInWatchlist) {
-                                viewModel.removeFromWatchlist(movie)
-                            } else {
-                                viewModel.addToWatchlist(movie)
-                            }
-                        },
-                        isInWatchlist = isInWatchlist
-                    )
-                }
-            }
-            // 🌟 المشاهير الشائعين
-            SectionTitle("Trending Celebrities")
-            LazyRow(modifier = Modifier.padding(vertical = 8.dp)) {
-                items(trendingCelebrities) { celeb ->
-                    CelebrityItem(celeb = celeb, onClick = onCelebrityClick)
-                }
-            }
-            // 🎞️ قائمة المشاهدة
-            SectionTitle("My Watchlist")
-            LazyRow(modifier = Modifier.padding(vertical = 8.dp)) {
-                items(watchlistMovies.take(3)) { movieEntity ->
-                    WatchlistItem(
-                        movieEntity = movieEntity,
-                        onMovieClick = onMovieClick,
-                        onRemoveClick = { movie ->
-                            viewModel.removeFromWatchlist(movie)
-                        }
-                    )
-                }
-            }
-            TextButton(
-                onClick = onViewAllClick,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1c1c1c))
+
             ) {
-                Text("View All", color = Color.Red, fontSize = 14.sp)
+                Row(
+                    modifier = Modifier.padding(start = 20.dp, top = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("|", color = Color(0xFFd8fd33), fontSize = 27.sp)
+                    Text(
+                        "Trending Movies",
+                        fontSize = 25.sp,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 2.dp)
+                    )
+                    TextButton(onClick = { onSeeAllClicked("trendingMovies") }) {
+                        Text(
+                            "See all",
+                            color = Color(0xFFcefc00),
+                            fontSize = 15.sp,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    }
+                }
+
+
+                LazyRow(modifier = Modifier.padding(top = 65.dp, bottom = 6.dp, start = 15.dp)) {
+                    items(trendingMovies) { movie ->
+                        val isInWatchlist = watchlistMovies.any { it.id == movie.id }
+                        MovieItem(
+                            movie = movie,
+                            onClick = onMovieClick,
+                            onToggleWatchlist = {
+                                if (isInWatchlist) {
+                                    viewModel.removeFromWatchlist(movie)
+                                } else {
+                                    viewModel.addToWatchlist(movie)
+                                }
+                            },
+                            isInWatchlist = isInWatchlist
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1c1c1c))
+            ) {
+                Row(
+                    modifier = Modifier.padding(start = 20.dp, top = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("|", color = Color(0xFFd8fd33), fontSize = 27.sp)
+                    Text(
+                        "Trending Celebrities",
+                        fontSize = 25.sp,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 2.dp)
+                    )
+                    TextButton(onClick = { onCelebSeeAllClick("celebrityList") }) {
+                        Text(
+                            "See all",
+                            color = Color(0xFFcefc00),
+                            fontSize = 15.sp,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    }
+                }
+
+                LazyRow(modifier = Modifier.padding(top = 65.dp, bottom = 6.dp, start = 15.dp)) {
+                    items(trendingCelebrities) { celeb ->
+                        CelebrityItem(celeb = celeb, onClick = onCelebrityClick)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1c1c1c))
+            ) {
+                Row(
+                    modifier = Modifier.padding(start = 20.dp, top = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("|", color = Color(0xFFd8fd33), fontSize = 27.sp)
+                    Text(
+                        "My Watchlist",
+                        fontSize = 25.sp,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 2.dp)
+                    )
+                    TextButton(onClick = onViewAllClick) {
+                        Text("View All", color = Color(0xFFd8fd33), fontSize = 14.sp)
+                    }
+                }
+
+                LazyRow(modifier = Modifier.padding(top = 65.dp, bottom = 6.dp, start = 15.dp)) {
+                    items(watchlistMovies.take(3)) { movieEntity ->
+                        WatchlistItem(
+                            movieEntity = movieEntity,
+                            onMovieClick = onMovieClick,
+                            onRemoveClick = { movie ->
+                                viewModel.removeFromWatchlist(movie)
+                            }
+                        )
+                    }
+                }
             }
         }
     }
 }
-@Composable
-fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        color = Color.White,
-        fontSize = 20.sp,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-    )
-}
+
 @Composable
 fun MovieItem(
     movie: Movie,
@@ -269,7 +405,7 @@ fun MovieItem(
     } ?: "https://via.placeholder.com/300x450?text=No+Image"
     Box(
         modifier = Modifier
-            .padding(8.dp)
+            .padding(top = 8.dp, bottom = 8.dp, start = 5.dp)
             .width(140.dp)
     ) {
         Column(
@@ -280,7 +416,7 @@ fun MovieItem(
                 contentDescription = movie.title ?: "Movie Poster",
                 modifier = Modifier
                     .height(190.dp)
-                    .clip(RoundedCornerShape(10.dp)),
+                    .width(130.dp),
                 contentScale = ContentScale.Crop
             )
             Text(
@@ -301,7 +437,7 @@ fun MovieItem(
             tint = if (isInWatchlist) Color.Red else Color.White,
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(6.dp)
+                .padding(end = 15.dp, top = 3.dp)
                 .size(22.dp)
                 .clickable { onToggleWatchlist(movie) }
         )
@@ -380,7 +516,8 @@ fun WatchlistItem(
             painter = rememberAsyncImagePainter(posterUrl),
             contentDescription = movieEntity.title ?: "Watchlist Movie",
             modifier = Modifier
-                .height(150.dp)
+                .height(190.dp)
+                .width(130.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .clickable { onMovieClick(movieFromEntity) },
             contentScale = ContentScale.Crop

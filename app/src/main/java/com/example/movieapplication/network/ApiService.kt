@@ -3,6 +3,7 @@ package com.example.movieapp.network
 import com.example.movieapp.model.MovieResponse
 import com.example.movieapp.model.CelebrityResponse
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
@@ -23,22 +24,21 @@ interface ApiService {
         @Query("with_genres") genreId: Int
     ): MovieResponse
 
-    // 🌟 جلب المشاهير التريندينج
     @GET("trending/person/week")
     suspend fun getTrendingCelebrities(
         @Query("api_key") apiKey: String
     ): CelebrityResponse
 
-    // 🔍 البحث عن فيلم
     @GET("search/movie")
     suspend fun searchMovies(
         @Query("api_key") apiKey: String,
-        @Query("query") query: String // 🔤 الكلمة اللي بيبحث بيها المستخدم
+        @Query("query") query: String
     ): MovieResponse
 
     @GET("search/person")
     suspend fun searchCelebrities(
         @Query("api_key") apiKey: String,
-        @Query("query") query: String // 🔤 الكلمة اللي بيبحث بيها المستخدم
+        @Query("query") query: String
     ): CelebrityResponse
+
 }

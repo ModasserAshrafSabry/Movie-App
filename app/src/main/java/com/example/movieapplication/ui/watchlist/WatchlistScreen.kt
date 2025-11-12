@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -24,9 +27,10 @@ import com.example.movieapp.data.local.MovieEntity
 
 @Composable
 fun WatchlistScreen(
-    watchlist: List<MovieEntity>, // 🎬 قائمة الأفلام المحفوظة
-    onBackClick: () -> Unit, // ⬅️ عند الضغط على رجوع
-    onMovieClick: (MovieEntity) -> Unit // 🖱️ لما المستخدم يضغط على فيلم
+    watchlist: List<MovieEntity>,
+    onBackClick: () -> Unit,
+    onMovieClick: (MovieEntity) -> Unit,
+    onRemoveClick: (MovieEntity) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -61,40 +65,58 @@ fun WatchlistScreen(
             // 📜 عرض الأفلام في قائمة
             LazyColumn {
                 items(watchlist) { movie ->
-
-                    Row(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
-                            .clickable { onMovieClick(movie) },
-                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // 🖼️ صورة الفيلم
-                        Image(
-                            painter = rememberAsyncImagePainter(
-                                model = "https://image.tmdb.org/t/p/w500${movie.posterPath?.let { if (it.startsWith('/')) it else "/$it" } ?: ""}"
-                            ),
-                            contentDescription = movie.title,
+                        Row(
                             modifier = Modifier
-                                .size(100.dp)
-                                .clip(RoundedCornerShape(10.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-
-                        // 📜 بيانات الفيلم
-                        Column(modifier = Modifier.padding(start = 12.dp)) {
-                            Text(
-                                text = movie.title,
-                                color = Color.White,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            movie.voteAverage?.let {
-                                Text(
-                                    text = "⭐ $it/10",
-                                    color = Color.Yellow,
-                                    fontSize = 14.sp
+                                .fillMaxWidth()
+                                .clickable { onMovieClick(movie) },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // 🖼️ صورة الفيلم
+                            Box {
+                                Image(
+                                    painter = rememberAsyncImagePainter(
+                                        model = "https://image.tmdb.org/t/p/w500${movie.posterPath?.let { if (it.startsWith('/')) it else "/$it" } ?: ""}"
+                                    ),
+                                    contentDescription = movie.title,
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .clip(RoundedCornerShape(10.dp)),
+                                    contentScale = ContentScale.Crop
                                 )
+
+                                // Remove Icon
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Remove from Watchlist",
+                                    tint = Color.Red,
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(4.dp)
+                                        .size(24.dp)
+                                        .clickable { onRemoveClick(movie) }
+                                )
+                            }
+
+                            // 📜 بيانات الفيلم
+                            Column(modifier = Modifier.padding(start = 12.dp)) {
+                                Text(
+                                    text = movie.title,
+                                    color = Color.White,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                movie.voteAverage?.let {
+                                    Text(
+                                        text = "⭐ $it/10",
+                                        color = Color.Yellow,
+                                        fontSize = 14.sp
+                                    )
+                                }
                             }
                         }
                     }
