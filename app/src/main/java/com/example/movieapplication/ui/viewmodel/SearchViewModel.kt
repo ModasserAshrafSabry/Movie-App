@@ -26,8 +26,8 @@ class SearchViewModel : ViewModel() {
     private val _popularMovies = MutableStateFlow<List<Movie>>(emptyList())
     val popularMovies: StateFlow<List<Movie>> = _popularMovies.asStateFlow()
 
-        private val _MoviesByGenre = MutableStateFlow<List<Movie>>(emptyList())
-        val MoviesByGenre: StateFlow<List<Movie>> = _MoviesByGenre.asStateFlow()
+    private val _MoviesByGenre = MutableStateFlow<List<Movie>>(emptyList())
+    val MoviesByGenre: StateFlow<List<Movie>> = _MoviesByGenre.asStateFlow()
 
     private val repository = MovieRepository()
 
