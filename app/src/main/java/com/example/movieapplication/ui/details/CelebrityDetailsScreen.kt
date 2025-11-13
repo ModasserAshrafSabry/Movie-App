@@ -22,10 +22,9 @@ import com.example.movieapp.model.Celebrity
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CelebrityDetailsScreen(
-    celebrity: Celebrity,        // 🔹 المشهور المختار من الشاشة السابقة
-    onBackClick: () -> Unit      // 🔹 دالة للرجوع للشاشة السابقة
+    celebrity: Celebrity,
+    onBackClick: () -> Unit
 ) {
-    // 🖼️ تحديد رابط الصورة (من TMDB أو Placeholder لو مش موجودة)
     val profileUrl = celebrity.profilePath?.let {
         "https://image.tmdb.org/t/p/w500$it"
     } ?: "https://via.placeholder.com/300x300?text=No+Image"

@@ -20,14 +20,13 @@ import com.example.movieapp.ui.home.HomeScreen
 import com.example.movieapp.ui.home.HomeViewModel
 import com.example.movieapp.ui.search.SearchScreen
 import com.example.movieapp.ui.watchlist.WatchlistScreen
-import com.example.movieapplication.ui.CelebrityListScreen
-import com.example.movieapplication.ui.Genre
-import com.example.movieapplication.ui.GenresScreen
-import com.example.movieapplication.ui.MovieGridScreen
+import com.example.movieapplication.ui.details.CelebrityListScreen
+import com.example.movieapplication.ui.details.Genre
+import com.example.movieapplication.ui.details.GenresScreen
+import com.example.movieapplication.ui.details.MovieGridScreen
 import com.example.movieapplication.ui.viewmodel.SearchViewModel
 import com.google.gson.Gson
-import com.example.movieapplication.ui.MovieGridScreen
-import com.example.movieapplication.ui.SeeAllScreen
+import com.example.movieapplication.ui.details.SeeAllScreen
 
 
 val genreList = listOf(
