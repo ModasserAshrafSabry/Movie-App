@@ -13,11 +13,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+=======
+import androidx.compose.material.icons.filled.*
+>>>>>>> Stashed changes
 =======
 import androidx.compose.material.icons.filled.*
 >>>>>>> Stashed changes
@@ -47,8 +51,13 @@ import com.example.movieapp.data.local.MovieEntity
 import com.example.movieapp.model.Celebrity
 import com.example.movieapp.model.Movie
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import kotlinx.coroutines.launch
 
+=======
+
+@OptIn(ExperimentalMaterial3Api::class)
+>>>>>>> Stashed changes
 =======
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,8 +70,12 @@ fun HomeScreen(
     onSearchClick: () -> Unit = {},
     onViewAllClick: () -> Unit = {},
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     onSeeAllClicked: (String) -> Unit = {},
     onCelebSeeAllClick: (String) -> Unit = {}
+=======
+    onProfileClick: () -> Unit = {}  // Add this
+>>>>>>> Stashed changes
 =======
     onProfileClick: () -> Unit = {}  // Add this
 >>>>>>> Stashed changes
@@ -126,8 +139,11 @@ fun HomeScreen(
                 .padding(bottom = 12.dp)
         ) {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
             // 🎬 اللافتة الدعائية
@@ -434,7 +450,10 @@ fun HomeScreen(
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 @Composable
 fun SectionTitle(title: String) {
     Text(
@@ -446,6 +465,9 @@ fun SectionTitle(title: String) {
     )
 }
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 @Composable
 fun MovieItem(

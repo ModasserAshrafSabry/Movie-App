@@ -28,7 +28,10 @@ import com.example.movieapplication.ui.details.GenresScreen
 import com.example.movieapplication.ui.details.MovieGridScreen
 import com.example.movieapplication.ui.viewmodel.SearchViewModel
 import com.google.gson.Gson
+<<<<<<< Updated upstream
 import com.example.movieapplication.ui.details.SeeAllScreen
+=======
+>>>>>>> Stashed changes
 
 val genreList = listOf(
     Genre(28, "Action"),
@@ -81,6 +84,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
                 },
                 onSearchClick = { navController.navigate("search") },
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 onViewAllClick = { navController.navigate("watchlist")},
                 onSeeAllClicked = {val json = gson.toJson(trendingMovies)
                     val encoded = Uri.encode(json)
@@ -114,6 +118,10 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     navController.navigate("details/$encoded")
                 },
                 onBackClick = { navController.popBackStack() }
+=======
+                onViewAllClick = { navController.navigate("watchlist") },
+                onProfileClick = { navController.navigate("profile") }  // Add this line
+>>>>>>> Stashed changes
 =======
                 onViewAllClick = { navController.navigate("watchlist") },
                 onProfileClick = { navController.navigate("profile") }  // Add this line

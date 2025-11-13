@@ -60,7 +60,12 @@ android {
 
 dependencies {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     implementation(libs.firebase.auth)
+=======
+    implementation(libs.androidx.ui.text)
+    implementation(libs.firebase.firestore)
+>>>>>>> Stashed changes
 =======
     implementation(libs.androidx.ui.text)
     implementation(libs.firebase.firestore)
@@ -105,7 +110,12 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.0")
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     implementation("androidx.compose.material:material-icons-extended:1.7.4")
+=======
+    implementation ("com.google.firebase:firebase-auth-ktx:22.1.2")
+    implementation ("com.google.firebase:firebase-firestore-ktx:24.8.1")
+>>>>>>> Stashed changes
 =======
     implementation ("com.google.firebase:firebase-auth-ktx:22.1.2")
     implementation ("com.google.firebase:firebase-firestore-ktx:24.8.1")
