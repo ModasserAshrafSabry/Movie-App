@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.kapt") // مهم لـ Room
     id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -58,6 +59,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.firebase.auth)
     val composeBom = platform("androidx.compose:compose-bom:2024.10.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -96,4 +98,6 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.0")
     implementation("androidx.room:room-ktx:2.6.0")
     kapt("androidx.room:room-compiler:2.6.0")
+
+    implementation("androidx.compose.material:material-icons-extended:1.7.4")
 }
