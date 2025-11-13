@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- إذن الإنترنت ضروري علشان التطبيق يقدر يتصل بـ API -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -13,31 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MovieApplication">
-        <activity
-            android:name="com.example.movieapplication.ui.Signin.SigninActivity"
-            android:exported="false"
-            android:label="@string/title_activity_signin"
-            android:theme="@style/Theme.MovieApplication" />
-        <activity
-            android:name="com.example.movieapplication.ui.Signup.SignupActivity"
-            android:exported="false"
-            android:label="@string/title_activity_signup"
-            android:theme="@style/Theme.MovieApplication" />
-        <activity
-            android:name="com.example.movieapplication.ui.Login.LoginActivity"
-            android:exported="false"
-            android:label="@string/title_activity_login"
-            android:theme="@style/Theme.MovieApplication" />
-        <activity
-            android:name="Splash.SplashActivity"
-            android:exported="false"
-            android:label="@string/title_activity_splash"
-            android:theme="@style/Theme.MovieApplication" />
-        <activity
-            android:name="com.example.movieapplication.SplashActivity"
-            android:exported="false"
-            android:label="@string/title_activity_splash"
-            android:theme="@style/Theme.MovieApplication" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -45,10 +22,8 @@
             android:theme="@style/Theme.MovieApplication">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
-
 </manifest>

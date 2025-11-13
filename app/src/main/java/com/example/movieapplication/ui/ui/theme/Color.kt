@@ -1,4 +1,4 @@
-package com.example.movieapplication.ui.Signin.ui.theme
+package com.example.movieapplication.ui.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
