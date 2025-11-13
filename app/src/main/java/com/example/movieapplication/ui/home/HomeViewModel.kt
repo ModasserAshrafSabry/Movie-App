@@ -15,15 +15,15 @@ class HomeViewModel(
     private val movieRepository: MovieRepository,
     private val watchlistRepository: WatchlistRepository
 ) : ViewModel() {
-    // 🎬 الأفلام الشائعة
+
     private val _trendingMovies = MutableStateFlow<List<Movie>>(emptyList())
     val trendingMovies: StateFlow<List<Movie>> = _trendingMovies.asStateFlow()
-    // 🌟 المشاهير الشائعين
+
     private val _trendingCelebrities = MutableStateFlow<List<Celebrity>>(emptyList())
     val trendingCelebrities: StateFlow<List<Celebrity>> = _trendingCelebrities.asStateFlow()
-    // 🎞️ قائمة المشاهدة
+
     val watchlist = watchlistRepository.getAllMovies()
-    // ✅ حالة رسالة الـ Snackbar
+
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage.asStateFlow()
     init {
@@ -51,7 +51,7 @@ class HomeViewModel(
             }
         }
     }
-    // ➕ إضافة فيلم إلى قائمة المشاهدة
+
     fun addToWatchlist(movie: Movie) {
         viewModelScope.launch {
             val exists = watchlistRepository.isMovieInWatchlist(movie.id)
