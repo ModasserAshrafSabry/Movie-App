@@ -12,11 +12,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+<<<<<<< Updated upstream
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+=======
+import androidx.compose.material.icons.filled.*
+>>>>>>> Stashed changes
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,8 +46,13 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.movieapp.data.local.MovieEntity
 import com.example.movieapp.model.Celebrity
 import com.example.movieapp.model.Movie
+<<<<<<< Updated upstream
 import kotlinx.coroutines.launch
 
+=======
+
+@OptIn(ExperimentalMaterial3Api::class)
+>>>>>>> Stashed changes
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -51,8 +60,12 @@ fun HomeScreen(
     onCelebrityClick: (Celebrity) -> Unit = {},
     onSearchClick: () -> Unit = {},
     onViewAllClick: () -> Unit = {},
+<<<<<<< Updated upstream
     onSeeAllClicked: (String) -> Unit = {},
     onCelebSeeAllClick: (String) -> Unit = {}
+=======
+    onProfileClick: () -> Unit = {}  // Add this
+>>>>>>> Stashed changes
 ) {
     val trendingMovies by viewModel.trendingMovies.collectAsState()
     val trendingCelebrities by viewModel.trendingCelebrities.collectAsState()
@@ -66,7 +79,32 @@ fun HomeScreen(
             viewModel.clearSnackbarMessage()
         }
     }
+
     Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Discover Movies",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Black
+                ),
+                actions = {
+                    // Add profile icon here
+                    IconButton(onClick = onProfileClick) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profile",
+                            tint = Color.White
+                        )
+                    }
+                }
+            )
+        },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { data ->
                 Snackbar(
@@ -87,8 +125,11 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 12.dp)
         ) {
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
             // 🎬 اللافتة الدعائية
             if (trendingMovies.isNotEmpty()) {
                 val topMovie = trendingMovies.first()
@@ -392,6 +433,20 @@ fun HomeScreen(
     }
 }
 
+<<<<<<< Updated upstream
+=======
+@Composable
+fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        color = Color.White,
+        fontSize = 20.sp,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+    )
+}
+
+>>>>>>> Stashed changes
 @Composable
 fun MovieItem(
     movie: Movie,
@@ -485,7 +540,6 @@ fun CelebrityItem(celeb: Celebrity, onClick: (Celebrity) -> Unit) {
         )
     }
 }
-
 
 @Composable
 fun WatchlistItem(

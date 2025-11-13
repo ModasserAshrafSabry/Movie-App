@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.example.movieapp"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.movieapp"
@@ -59,7 +59,12 @@ android {
 }
 
 dependencies {
+<<<<<<< Updated upstream
     implementation(libs.firebase.auth)
+=======
+    implementation(libs.androidx.ui.text)
+    implementation(libs.firebase.firestore)
+>>>>>>> Stashed changes
     val composeBom = platform("androidx.compose:compose-bom:2024.10.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -99,5 +104,10 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.0")
     kapt("androidx.room:room-compiler:2.6.0")
 
+<<<<<<< Updated upstream
     implementation("androidx.compose.material:material-icons-extended:1.7.4")
+=======
+    implementation ("com.google.firebase:firebase-auth-ktx:22.1.2")
+    implementation ("com.google.firebase:firebase-firestore-ktx:24.8.1")
+>>>>>>> Stashed changes
 }

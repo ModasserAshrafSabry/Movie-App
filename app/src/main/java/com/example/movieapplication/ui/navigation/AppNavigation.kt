@@ -18,7 +18,9 @@ import com.example.movieapp.ui.details.MovieDetailsScreen
 import com.example.movieapp.ui.celebrity.CelebrityDetailsScreen
 import com.example.movieapp.ui.home.HomeScreen
 import com.example.movieapp.ui.home.HomeViewModel
+import com.example.movieapp.ui.profile.ProfileScreen
 import com.example.movieapp.ui.search.SearchScreen
+import com.example.movieapp.ui.settings.AccountSettingsScreen
 import com.example.movieapp.ui.watchlist.WatchlistScreen
 import com.example.movieapplication.ui.details.CelebrityListScreen
 import com.example.movieapplication.ui.details.Genre
@@ -27,7 +29,6 @@ import com.example.movieapplication.ui.details.MovieGridScreen
 import com.example.movieapplication.ui.viewmodel.SearchViewModel
 import com.google.gson.Gson
 import com.example.movieapplication.ui.details.SeeAllScreen
-
 
 val genreList = listOf(
     Genre(28, "Action"),
@@ -79,6 +80,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     navController.navigate("celebrityDetails/$encoded")
                 },
                 onSearchClick = { navController.navigate("search") },
+<<<<<<< Updated upstream
                 onViewAllClick = { navController.navigate("watchlist")},
                 onSeeAllClicked = {val json = gson.toJson(trendingMovies)
                     val encoded = Uri.encode(json)
@@ -112,6 +114,10 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     navController.navigate("details/$encoded")
                 },
                 onBackClick = { navController.popBackStack() }
+=======
+                onViewAllClick = { navController.navigate("watchlist") },
+                onProfileClick = { navController.navigate("profile") }  // Add this line
+>>>>>>> Stashed changes
             )
         }
 
@@ -280,9 +286,33 @@ fun AppNavigation(viewModel: HomeViewModel) {
                 onBackClick = { navController.popBackStack() }
             )
         }
+
+        // 👤 Profile Screen
+        composable("profile") {
+            ProfileScreen(
+                onNavigateToSettings = { navController.navigate("account_settings") },
+                onNavigateToCelebrity = { celebrityId ->
+                    // Handle celebrity navigation
+                },
+                onNavigateToGenre = { genre ->
+                    // Handle genre navigation
+                }
+            )
+        }
+
+        // ⚙️ Account Settings Screen
+        composable("account_settings") {
+            AccountSettingsScreen(
+                onLogout = {
+                    // Navigate to login/splash
+                    navController.navigate("home") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                }
+            )
+        }
     }
 }
-
 
 // 🧠 دالة بتحول JSON إلى Movie أو MovieEntity
 private fun decodeMovieJson(json: String, gson: Gson): Movie? {
