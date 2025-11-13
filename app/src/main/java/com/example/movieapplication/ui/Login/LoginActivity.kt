@@ -116,9 +116,9 @@ fun LoginScreen(
     onSignUpClick: () -> Unit = {},
     onForgotPasswordClick: (String) -> Unit = {}
 ) {
-    val bgColor = Color(0xFF080808) // 🖤 black background
-    val buttonColor = Color(0xFF92B300) // 💚 green
-    val textColor = Color(0xFFF1F0F3) // white text
+    val bgColor = Color(0xFF080808)
+    val buttonColor = Color(0xFF92B300)
+    val textColor = Color(0xFFF1F0F3)
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -137,7 +137,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // 💬 Title
+
             Text(
                 text = buildAnnotatedString {
                     append("Welcome ")
@@ -213,7 +213,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(35.dp))
 
-            // 💚 Login Button
+
             Button(
                 onClick = { onLoginClick(email, password) },
                 modifier = Modifier
@@ -236,7 +236,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🟢 Sign Up Text
+
             Text(
                 text = buildAnnotatedString {
                     append("Don’t have an account? ")

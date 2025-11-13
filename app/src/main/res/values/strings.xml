@@ -2,4 +2,6 @@
     <string name="app_name">movie application</string>
     <string name="title_activity_splash">SplashActivity</string>
     <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_signup">SignupActivity</string>
+    <string name="title_activity_signin">SigninActivity</string>
 </resources>
