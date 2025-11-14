@@ -6,10 +6,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.movieapp.model.Movie
 import com.example.movieapp.model.Celebrity
@@ -25,10 +25,11 @@ import com.example.movieapplication.ui.details.Genre
 import com.example.movieapplication.ui.details.GenresScreen
 import com.example.movieapplication.ui.details.MovieGridScreen
 import com.example.movieapplication.ui.viewmodel.SearchViewModel
-import com.google.gson.Gson
 import com.example.movieapplication.ui.details.SeeAllScreen
+import com.google.gson.Gson
 
 
+// ⬅ نفس genreList كما هو
 val genreList = listOf(
     Genre(28, "Action"),
     Genre(12, "Adventure"),
@@ -51,9 +52,14 @@ val genreList = listOf(
     Genre(37, "Western")
 )
 
+
 @Composable
-fun AppNavigation(viewModel: HomeViewModel) {
-    val navController = rememberNavController()
+fun AppNavigation(
+    viewModel: HomeViewModel,
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
+
     val gson = Gson()
     val trendingMovies = viewModel.trendingMovies.collectAsState().value
     val trendingCelebrities by viewModel.trendingCelebrities.collectAsState()
@@ -61,7 +67,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
     NavHost(
         navController = navController,
         startDestination = "home",
-        modifier = Modifier
+        modifier = modifier
     ) {
 
         // 🏠 الشاشة الرئيسية
@@ -79,17 +85,21 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     navController.navigate("celebrityDetails/$encoded")
                 },
                 onSearchClick = { navController.navigate("search") },
-                onViewAllClick = { navController.navigate("watchlist")},
-                onSeeAllClicked = {val json = gson.toJson(trendingMovies)
+                onViewAllClick = { navController.navigate("watchlist") },
+                onSeeAllClicked = {
+                    val json = gson.toJson(trendingMovies)
                     val encoded = Uri.encode(json)
                     navController.navigate("SeeAllScreen?movieList=$encoded")
                 },
-                onCelebSeeAllClick = {val json = gson.toJson(trendingCelebrities)
+                onCelebSeeAllClick = {
+                    val json = gson.toJson(trendingCelebrities)
                     val encoded = Uri.encode(json)
                     navController.navigate("allCelebrities?celebrityList=$encoded")
-            })
+                }
+            )
         }
 
+        // ⭐ شاشة See All Movies
         composable(
             route = "SeeAllScreen?movieList={movieList}",
             arguments = listOf(navArgument("movieList") {
@@ -115,6 +125,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
             )
         }
 
+        // ⭐ شاشة كل المشاهير
         composable(
             route = "allCelebrities?celebrityList={celebrityList}",
             arguments = listOf(navArgument("celebrityList") {
@@ -140,9 +151,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
             )
         }
 
-
-
-        // 🎬 تفاصيل الفيلم
+        // 🎬 Movie Details
         composable(
             "details/{movieJson}",
             arguments = listOf(navArgument("movieJson") { type = NavType.StringType })
@@ -158,7 +167,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
             )
         }
 
-        // 🔍 شاشة البحث
+        // 🔎 Search Screen
         composable("search") {
             SearchScreen(
                 viewModel = viewModel,
@@ -173,7 +182,6 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     val encoded = Uri.encode(json)
                     navController.navigate("celebrityDetails/$encoded")
                 },
-
                 onSeeAllClick = { type ->
                     if (type.startsWith("genre_")) {
                         val genreId = type.removePrefix("genre_").toIntOrNull() ?: 0
@@ -182,12 +190,10 @@ fun AppNavigation(viewModel: HomeViewModel) {
                         navController.navigate("SeeAllScreen?contentType=$type")
                     }
                 }
-
-
             )
         }
 
-        // 🎞️ قائمة المشاهدة
+        // ❤️ Watchlist Screen
         composable("watchlist") {
             val watchlist = viewModel.watchlist.collectAsState(initial = emptyList()).value
             WatchlistScreen(
@@ -199,7 +205,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     navController.navigate("details/$encoded")
                 },
                 onRemoveClick = { movieEntity ->
-                    val movie = com.example.movieapp.model.Movie(
+                    val movie = Movie(
                         id = movieEntity.id,
                         title = movieEntity.title,
                         posterPath = movieEntity.posterPath,
@@ -213,6 +219,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
             )
         }
 
+        // ⭐ See All content types
         composable(
             route = "SeeAllScreen?contentType={contentType}",
             arguments = listOf(navArgument("contentType") {
@@ -246,6 +253,8 @@ fun AppNavigation(viewModel: HomeViewModel) {
                 }
             }
         }
+
+        // 🎭 Movies by Genre
         composable(
             route = "moviesByGenre/{genreId}",
             arguments = listOf(navArgument("genreId") { type = NavType.IntType })
@@ -264,6 +273,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
             )
         }
 
+        // ⭐ Celebrity Details
         composable(
             "celebrityDetails/{celebrityJson}",
             arguments = listOf(navArgument("celebrityJson") { type = NavType.StringType })
@@ -284,7 +294,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
 }
 
 
-// 🧠 دالة بتحول JSON إلى Movie أو MovieEntity
+// 🧠 دالة لتحويل JSON → Movie
 private fun decodeMovieJson(json: String, gson: Gson): Movie? {
     return try {
         gson.fromJson(json, Movie::class.java)
