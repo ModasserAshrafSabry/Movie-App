@@ -1,47 +1,39 @@
 package com.example.movieapplication.ui.Moviedetails
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.movieapp.model.MovieDetails
+import com.example.movieapp.ui.details.MovieDetailsScreen
 import com.example.movieapplication.ui.Moviedetails.ui.theme.MovieApplicationTheme
 
 class MovieDetails : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        val movie = intent.getSerializableExtra("movie") as? MovieDetails
+        if (movie == null) {
+            finish()
+            return
+        }
+
         setContent {
             MovieApplicationTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MovieDetailsScreen(
+                    movie = movie,
+                    onBackClick = { finish() }
+                )
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MovieApplicationTheme {
-        Greeting("Android")
+    companion object {
+        fun navigate(context: Context, movie: MovieDetails) {
+            val intent = Intent(context, MovieDetails::class.java)
+            intent.putExtra("movie", movie)
+            context.startActivity(intent)
+        }
     }
 }

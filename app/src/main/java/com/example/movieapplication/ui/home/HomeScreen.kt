@@ -36,6 +36,7 @@ import com.example.movieapp.model.Celebrity
 import com.example.movieapp.model.Movie
 
 @OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
