@@ -13,8 +13,6 @@ data class MovieEntity(
     val posterPath: String?,
     val voteAverage: Double?,
     val overview: String?,
-    // NEW
-    val castJson: String?,   // <-- JSON string
-    val crewJson: String?    // <-- JSON string
+
 )
 

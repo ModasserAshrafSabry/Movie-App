@@ -3,7 +3,11 @@ package com.example.movieapp.ui.details
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,10 +20,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.example.movieapp.data.MovieRepository
 import com.example.movieapp.data.local.AppDatabase
 import com.example.movieapp.data.local.MovieEntity
+import com.example.movieapp.model.CastMember
 import com.example.movieapp.model.Movie
+import com.example.movieapplication.model.CrewMember
 import kotlinx.coroutines.launch
+import kotlin.collections.isNotEmpty
 
 @Composable
 fun MovieDetailsScreen(
@@ -65,12 +73,13 @@ fun MovieDetailsScreen(
         val exists = db.watchlistDao().isMovieInWatchlist(id)
         addedToWatchlist = exists
     }
-
+    val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
             .padding(16.dp)
+            .verticalScroll(scrollState)
     ) {
         // 🔙 زر الرجوع
         TextButton(onClick = onBackClick) {
@@ -118,6 +127,103 @@ fun MovieDetailsScreen(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
+// بعد Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+
+// 🧑‍🎤 Cast & Crew
+        val castList = remember { mutableStateOf<List<CastMember>>(emptyList()) }
+        val crewList = remember { mutableStateOf<List<CrewMember>>(emptyList()) }
+
+        LaunchedEffect(id) {
+            // لو movie من نوع Movie، هنجلب الـ credits من الريبو أو API
+            if (movie is Movie) {
+                try {
+                    val repo = MovieRepository()  // أو inject لو عندك DI
+                    val credits = repo.getMovieCredits(movie.id)  // دالة جديدة في الريبو لازم تعملها
+                    castList.value = credits.cast
+                    crewList.value = credits.crew
+                } catch (e: Exception) {
+                    // فشل في جلب الـ credits
+                }
+            }
+        }
+
+// 🎭 Cast
+        // 🎭 Cast Section - LazyRow
+        if (castList.value.isNotEmpty()) {
+            Text(
+                text = "Cast",
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp)
+            ) {
+                items(castList.value.take(10)) { cast ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.width(100.dp)
+                    ) {
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                model = cast.profile_path?.let {
+                                    if (it.startsWith("http")) it else "https://image.tmdb.org/t/p/w200/${it.trimStart('/')}"
+                                } ?: "https://via.placeholder.com/100x150?text=No+Image"
+                            ),
+                            contentDescription = cast.name,
+                            modifier = Modifier
+                                .size(width = 100.dp, height = 150.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = cast.name,
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            maxLines = 1
+                        )
+
+                        Text(
+                            text = cast.character,
+                            color = Color.LightGray,
+                            fontSize = 12.sp,
+                            maxLines = 1
+                        )
+                    }
+                }
+            }
+        }
+
+// 🎬 Crew
+        if (crewList.value.isNotEmpty()) {
+            Text(
+                text = "Crew",
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Column {
+                crewList.value.forEach { crew ->
+                    Text(
+                        text = "${crew.name} - ${crew.job ?: "N/A"}",
+                        color = Color.LightGray,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    )
+                }
+            }
+        }
 
 
         Button(

@@ -2,6 +2,8 @@ package com.example.movieapp.network
 
 import com.example.movieapp.model.MovieResponse
 import com.example.movieapp.model.CelebrityResponse
+import com.example.movieapplication.model.CreditsResponse
+import com.example.movieapplication.model.MovieDetails
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -40,5 +42,17 @@ interface ApiService {
         @Query("api_key") apiKey: String,
         @Query("query") query: String
     ): CelebrityResponse
+
+    @GET("movie/{movie_id}")
+    suspend fun getMovieDetails(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String
+    ): MovieDetails
+
+    @GET("movie/{movie_id}/credits")
+    suspend fun getMovieCredits(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String
+    ): CreditsResponse
 
 }

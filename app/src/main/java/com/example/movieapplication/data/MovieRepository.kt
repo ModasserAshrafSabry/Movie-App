@@ -7,6 +7,7 @@ import com.example.movieapp.network.ApiService
 import com.example.movieapp.network.RetrofitInstance
 import com.example.movieapp.BuildConfig
 import com.example.movieapp.model.CastMember
+import com.example.movieapplication.model.CreditsResponse
 
 class MovieRepository {
 
@@ -61,6 +62,9 @@ class MovieRepository {
 
     suspend fun searchCelebrities(query: String): CelebrityResponse {
         return apiService.searchCelebrities(BuildConfig.TMDB_API_KEY, query)
+    }
+    suspend fun getMovieCredits(movieId: Int): CreditsResponse {
+        return apiService.getMovieCredits(movieId, BuildConfig.TMDB_API_KEY)
     }
 
 
