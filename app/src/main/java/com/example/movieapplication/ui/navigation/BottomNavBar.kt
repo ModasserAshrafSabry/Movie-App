@@ -1,6 +1,7 @@
 package com.example.movieapp.ui.navigation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -81,22 +82,23 @@ fun BottomNavigationBar(
         )
     )
 
-
-
-    // ---------------------------------------------------------
-    // تصميم الـ Floating Bottom Navigation Bar
-    // ---------------------------------------------------------
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 20.dp) // رفع البار للأعلى ليظهر عائم
-    ) {
+            .padding(bottom = 20.dp)
 
+            .background(Color.Transparent)
+    ) {
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .clip(RoundedCornerShape(50.dp)) // الشكل الدائري مثل الصورة
-                .background(Color(0xFF1E1E1E))  // اللون الداكن
+                .clip(RoundedCornerShape(50.dp))
+                .background(Color(0xFF1E1E1E))
+                .border(
+                    width = 1.dp,
+                    color = Color.LightGray,
+                    shape = RoundedCornerShape(50.dp)
+                )
                 .padding(horizontal = 24.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(28.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -114,7 +116,6 @@ fun BottomNavigationBar(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    // الأيقونة (الصحيحة)
                     item.icon()
 
                     Text(
