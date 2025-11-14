@@ -6,10 +6,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.movieapp.model.Movie
 import com.example.movieapp.model.Celebrity
@@ -18,18 +18,19 @@ import com.example.movieapp.ui.details.MovieDetailsScreen
 import com.example.movieapp.ui.celebrity.CelebrityDetailsScreen
 import com.example.movieapp.ui.home.HomeScreen
 import com.example.movieapp.ui.home.HomeViewModel
+import com.example.movieapp.ui.profile.ProfileScreen
 import com.example.movieapp.ui.search.SearchScreen
+import com.example.movieapp.ui.settings.AccountSettingsScreen
 import com.example.movieapp.ui.watchlist.WatchlistScreen
+import com.example.movieapplication.ui.Login.LoginScreen
 import com.example.movieapplication.ui.details.CelebrityListScreen
 import com.example.movieapplication.ui.details.Genre
 import com.example.movieapplication.ui.details.GenresScreen
 import com.example.movieapplication.ui.details.MovieGridScreen
 import com.example.movieapplication.ui.viewmodel.SearchViewModel
-import com.example.movieapplication.ui.details.SeeAllScreen
 import com.google.gson.Gson
+import com.example.movieapplication.ui.details.SeeAllScreen
 
-
-// ⬅ نفس genreList كما هو
 val genreList = listOf(
     Genre(28, "Action"),
     Genre(12, "Adventure"),
@@ -52,14 +53,9 @@ val genreList = listOf(
     Genre(37, "Western")
 )
 
-
 @Composable
-fun AppNavigation(
-    viewModel: HomeViewModel,
-    navController: NavHostController,
-    modifier: Modifier = Modifier
-) {
-
+fun AppNavigation(viewModel: HomeViewModel) {
+    val navController = rememberNavController()
     val gson = Gson()
     val trendingMovies = viewModel.trendingMovies.collectAsState().value
     val trendingCelebrities by viewModel.trendingCelebrities.collectAsState()
@@ -67,8 +63,25 @@ fun AppNavigation(
     NavHost(
         navController = navController,
         startDestination = "home",
-        modifier = modifier
+        modifier = Modifier
     ) {
+        composable("login") {
+            LoginScreen(
+                onLoginClick = { email, password ->
+                    // Handle login logic here
+                    // After successful login, navigate to home
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onSignUpClick = {
+                    navController.navigate("signup")
+                },
+                onForgotPasswordClick = { email ->
+                    // Handle forgot password logic here
+                }
+            )
+        }
 
         // 🏠 الشاشة الرئيسية
         composable("home") {
@@ -95,11 +108,11 @@ fun AppNavigation(
                     val json = gson.toJson(trendingCelebrities)
                     val encoded = Uri.encode(json)
                     navController.navigate("allCelebrities?celebrityList=$encoded")
-                }
+                },
+                onProfileClick = { navController.navigate("profile") }
             )
         }
 
-        // ⭐ شاشة See All Movies
         composable(
             route = "SeeAllScreen?movieList={movieList}",
             arguments = listOf(navArgument("movieList") {
@@ -121,11 +134,11 @@ fun AppNavigation(
                     val encoded = Uri.encode(json)
                     navController.navigate("details/$encoded")
                 },
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+
             )
         }
 
-        // ⭐ شاشة كل المشاهير
         composable(
             route = "allCelebrities?celebrityList={celebrityList}",
             arguments = listOf(navArgument("celebrityList") {
@@ -151,7 +164,7 @@ fun AppNavigation(
             )
         }
 
-        // 🎬 Movie Details
+        // 🎬 تفاصيل الفيلم
         composable(
             "details/{movieJson}",
             arguments = listOf(navArgument("movieJson") { type = NavType.StringType })
@@ -167,7 +180,7 @@ fun AppNavigation(
             )
         }
 
-        // 🔎 Search Screen
+        // 🔍 شاشة البحث
         composable("search") {
             SearchScreen(
                 viewModel = viewModel,
@@ -193,7 +206,7 @@ fun AppNavigation(
             )
         }
 
-        // ❤️ Watchlist Screen
+        // 🎞️ قائمة المشاهدة
         composable("watchlist") {
             val watchlist = viewModel.watchlist.collectAsState(initial = emptyList()).value
             WatchlistScreen(
@@ -205,7 +218,7 @@ fun AppNavigation(
                     navController.navigate("details/$encoded")
                 },
                 onRemoveClick = { movieEntity ->
-                    val movie = Movie(
+                    val movie = com.example.movieapp.model.Movie(
                         id = movieEntity.id,
                         title = movieEntity.title,
                         posterPath = movieEntity.posterPath,
@@ -219,10 +232,10 @@ fun AppNavigation(
             )
         }
 
-        // ⭐ See All content types
         composable(
             route = "SeeAllScreen?contentType={contentType}",
             arguments = listOf(navArgument("contentType") {
+                type = NavType.StringType
                 defaultValue = "movies"
                 nullable = true
             })
@@ -254,7 +267,6 @@ fun AppNavigation(
             }
         }
 
-        // 🎭 Movies by Genre
         composable(
             route = "moviesByGenre/{genreId}",
             arguments = listOf(navArgument("genreId") { type = NavType.IntType })
@@ -273,7 +285,6 @@ fun AppNavigation(
             )
         }
 
-        // ⭐ Celebrity Details
         composable(
             "celebrityDetails/{celebrityJson}",
             arguments = listOf(navArgument("celebrityJson") { type = NavType.StringType })
@@ -290,11 +301,35 @@ fun AppNavigation(
                 onBackClick = { navController.popBackStack() }
             )
         }
+
+        // 👤 Profile Screen
+        composable("profile") {
+            ProfileScreen(
+                onNavigateToSettings = { navController.navigate("account_settings") },
+                onNavigateToCelebrity = { celebrityId ->
+                    // Handle celebrity navigation
+                },
+                onNavigateToGenre = { genre ->
+                    // Handle genre navigation
+                }
+            )
+        }
+
+        // ⚙️ Account Settings Screen
+        composable("account_settings") {
+            AccountSettingsScreen(
+                onLogout = {
+                    // Navigate to login screen and clear back stack
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                }
+            )
+        }
     }
 }
 
-
-// 🧠 دالة لتحويل JSON → Movie
+// 🧠 دالة بتحول JSON إلى Movie أو MovieEntity
 private fun decodeMovieJson(json: String, gson: Gson): Movie? {
     return try {
         gson.fromJson(json, Movie::class.java)
