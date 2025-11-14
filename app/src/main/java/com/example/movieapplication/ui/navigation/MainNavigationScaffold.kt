@@ -12,25 +12,36 @@ import com.example.movieapp.ui.home.HomeViewModel
 fun MainNavigationScaffold(
     viewModel: HomeViewModel
 ) {
-    // NavController واحد فقط
     val navController = rememberNavController()
 
-    // لمعرفة الشاشة الحالية
+    // نعرف الشاشة الحالية
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 
+    // ⛔ الشاشات اللي فعلاً جوه الـ AppNavigation وعايزين نخبي فيها البوتوم بار
+    val bottomBarRoutes = listOf(
+        "home",
+        "search",
+        "watchlist",
+        "profile"
+    )
+
+    val showBottomBar = currentRoute in bottomBarRoutes
+
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(
-                currentRoute = currentRoute,
-                onItemClick = { route ->
-                    navController.navigate(route) {
-                        launchSingleTop = true
-                        restoreState = true
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+            if (showBottomBar) {
+                BottomNavigationBar(
+                    currentRoute = currentRoute,
+                    onItemClick = { route ->
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                            restoreState = true
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     ) { innerPadding ->
         AppNavigation(
