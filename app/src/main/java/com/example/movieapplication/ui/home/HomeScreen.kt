@@ -12,34 +12,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
-=======
 import androidx.compose.material.icons.filled.*
->>>>>>> Stashed changes
-=======
-import androidx.compose.material.icons.filled.*
->>>>>>> Stashed changes
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
-import androidx.compose.ui.modifier.modifierLocalConsumer
-import androidx.compose.ui.platform.InspectableModifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -50,18 +34,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.movieapp.data.local.MovieEntity
 import com.example.movieapp.model.Celebrity
 import com.example.movieapp.model.Movie
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-import kotlinx.coroutines.launch
-
-=======
 
 @OptIn(ExperimentalMaterial3Api::class)
->>>>>>> Stashed changes
-=======
-
-@OptIn(ExperimentalMaterial3Api::class)
->>>>>>> Stashed changes
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -69,16 +43,9 @@ fun HomeScreen(
     onCelebrityClick: (Celebrity) -> Unit = {},
     onSearchClick: () -> Unit = {},
     onViewAllClick: () -> Unit = {},
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     onSeeAllClicked: (String) -> Unit = {},
-    onCelebSeeAllClick: (String) -> Unit = {}
-=======
-    onProfileClick: () -> Unit = {}  // Add this
->>>>>>> Stashed changes
-=======
-    onProfileClick: () -> Unit = {}  // Add this
->>>>>>> Stashed changes
+    onCelebSeeAllClick: (String) -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     val trendingMovies by viewModel.trendingMovies.collectAsState()
     val trendingCelebrities by viewModel.trendingCelebrities.collectAsState()
@@ -138,14 +105,6 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 12.dp)
         ) {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
-
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
             // 🎬 اللافتة الدعائية
             if (trendingMovies.isNotEmpty()) {
                 val topMovie = trendingMovies.first()
@@ -449,11 +408,6 @@ fun HomeScreen(
     }
 }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
 @Composable
 fun SectionTitle(title: String) {
     Text(
@@ -465,10 +419,6 @@ fun SectionTitle(title: String) {
     )
 }
 
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 @Composable
 fun MovieItem(
     movie: Movie,

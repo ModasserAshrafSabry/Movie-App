@@ -22,16 +22,14 @@ import com.example.movieapp.ui.profile.ProfileScreen
 import com.example.movieapp.ui.search.SearchScreen
 import com.example.movieapp.ui.settings.AccountSettingsScreen
 import com.example.movieapp.ui.watchlist.WatchlistScreen
+import com.example.movieapplication.ui.Login.LoginScreen
 import com.example.movieapplication.ui.details.CelebrityListScreen
 import com.example.movieapplication.ui.details.Genre
 import com.example.movieapplication.ui.details.GenresScreen
 import com.example.movieapplication.ui.details.MovieGridScreen
 import com.example.movieapplication.ui.viewmodel.SearchViewModel
 import com.google.gson.Gson
-<<<<<<< Updated upstream
 import com.example.movieapplication.ui.details.SeeAllScreen
-=======
->>>>>>> Stashed changes
 
 val genreList = listOf(
     Genre(28, "Action"),
@@ -67,6 +65,23 @@ fun AppNavigation(viewModel: HomeViewModel) {
         startDestination = "home",
         modifier = Modifier
     ) {
+        composable("login") {
+            LoginScreen(
+                onLoginClick = { email, password ->
+                    // Handle login logic here
+                    // After successful login, navigate to home
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onSignUpClick = {
+                    navController.navigate("signup")
+                },
+                onForgotPasswordClick = { email ->
+                    // Handle forgot password logic here
+                }
+            )
+        }
 
         // 🏠 الشاشة الرئيسية
         composable("home") {
@@ -83,17 +98,19 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     navController.navigate("celebrityDetails/$encoded")
                 },
                 onSearchClick = { navController.navigate("search") },
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                onViewAllClick = { navController.navigate("watchlist")},
-                onSeeAllClicked = {val json = gson.toJson(trendingMovies)
+                onViewAllClick = { navController.navigate("watchlist") },
+                onSeeAllClicked = {
+                    val json = gson.toJson(trendingMovies)
                     val encoded = Uri.encode(json)
                     navController.navigate("SeeAllScreen?movieList=$encoded")
                 },
-                onCelebSeeAllClick = {val json = gson.toJson(trendingCelebrities)
+                onCelebSeeAllClick = {
+                    val json = gson.toJson(trendingCelebrities)
                     val encoded = Uri.encode(json)
                     navController.navigate("allCelebrities?celebrityList=$encoded")
-            })
+                },
+                onProfileClick = { navController.navigate("profile") }
+            )
         }
 
         composable(
@@ -117,15 +134,8 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     val encoded = Uri.encode(json)
                     navController.navigate("details/$encoded")
                 },
-                onBackClick = { navController.popBackStack() }
-=======
-                onViewAllClick = { navController.navigate("watchlist") },
-                onProfileClick = { navController.navigate("profile") }  // Add this line
->>>>>>> Stashed changes
-=======
-                onViewAllClick = { navController.navigate("watchlist") },
-                onProfileClick = { navController.navigate("profile") }  // Add this line
->>>>>>> Stashed changes
+                onBackClick = { navController.popBackStack() },
+
             )
         }
 
@@ -153,8 +163,6 @@ fun AppNavigation(viewModel: HomeViewModel) {
                 onBackClick = { navController.popBackStack() }
             )
         }
-
-
 
         // 🎬 تفاصيل الفيلم
         composable(
@@ -187,7 +195,6 @@ fun AppNavigation(viewModel: HomeViewModel) {
                     val encoded = Uri.encode(json)
                     navController.navigate("celebrityDetails/$encoded")
                 },
-
                 onSeeAllClick = { type ->
                     if (type.startsWith("genre_")) {
                         val genreId = type.removePrefix("genre_").toIntOrNull() ?: 0
@@ -196,8 +203,6 @@ fun AppNavigation(viewModel: HomeViewModel) {
                         navController.navigate("SeeAllScreen?contentType=$type")
                     }
                 }
-
-
             )
         }
 
@@ -230,6 +235,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
         composable(
             route = "SeeAllScreen?contentType={contentType}",
             arguments = listOf(navArgument("contentType") {
+                type = NavType.StringType
                 defaultValue = "movies"
                 nullable = true
             })
@@ -260,6 +266,7 @@ fun AppNavigation(viewModel: HomeViewModel) {
                 }
             }
         }
+
         composable(
             route = "moviesByGenre/{genreId}",
             arguments = listOf(navArgument("genreId") { type = NavType.IntType })
@@ -312,8 +319,8 @@ fun AppNavigation(viewModel: HomeViewModel) {
         composable("account_settings") {
             AccountSettingsScreen(
                 onLogout = {
-                    // Navigate to login/splash
-                    navController.navigate("home") {
+                    // Navigate to login screen and clear back stack
+                    navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
                 }
