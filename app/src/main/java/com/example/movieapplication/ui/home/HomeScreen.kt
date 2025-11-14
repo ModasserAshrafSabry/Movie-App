@@ -103,6 +103,7 @@ fun HomeScreen(
                     color = Color.Black
                 )
                 .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
                 .padding(bottom = 12.dp)
         ) {
             // 🎬 اللافتة الدعائية
