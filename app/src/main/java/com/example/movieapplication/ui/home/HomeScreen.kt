@@ -61,30 +61,7 @@ fun HomeScreen(
     }
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "Discover Movies",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Black
-                ),
-                actions = {
-                    // Add profile icon here
-                    IconButton(onClick = onProfileClick) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile",
-                            tint = Color.White
-                        )
-                    }
-                }
-            )
-        },
+
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { data ->
                 Snackbar(
@@ -103,7 +80,6 @@ fun HomeScreen(
                     color = Color.Black
                 )
                 .verticalScroll(rememberScrollState())
-                .padding(paddingValues)
                 .padding(bottom = 12.dp)
         ) {
             // 🎬 اللافتة الدعائية
@@ -409,16 +385,7 @@ fun HomeScreen(
     }
 }
 
-@Composable
-fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        color = Color.White,
-        fontSize = 20.sp,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-    )
-}
+
 
 @Composable
 fun MovieItem(
