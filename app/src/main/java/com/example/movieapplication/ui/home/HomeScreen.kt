@@ -12,26 +12,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
-import androidx.compose.ui.modifier.modifierLocalConsumer
-import androidx.compose.ui.platform.InspectableModifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -42,8 +34,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.movieapp.data.local.MovieEntity
 import com.example.movieapp.model.Celebrity
 import com.example.movieapp.model.Movie
-import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -52,7 +44,8 @@ fun HomeScreen(
     onSearchClick: () -> Unit = {},
     onViewAllClick: () -> Unit = {},
     onSeeAllClicked: (String) -> Unit = {},
-    onCelebSeeAllClick: (String) -> Unit = {}
+    onCelebSeeAllClick: (String) -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     val trendingMovies by viewModel.trendingMovies.collectAsState()
     val trendingCelebrities by viewModel.trendingCelebrities.collectAsState()
@@ -66,7 +59,32 @@ fun HomeScreen(
             viewModel.clearSnackbarMessage()
         }
     }
+
     Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Discover Movies",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Black
+                ),
+                actions = {
+                    // Add profile icon here
+                    IconButton(onClick = onProfileClick) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profile",
+                            tint = Color.White
+                        )
+                    }
+                }
+            )
+        },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { data ->
                 Snackbar(
@@ -87,8 +105,6 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 12.dp)
         ) {
-
-
             // 🎬 اللافتة الدعائية
             if (trendingMovies.isNotEmpty()) {
                 val topMovie = trendingMovies.first()
@@ -393,6 +409,17 @@ fun HomeScreen(
 }
 
 @Composable
+fun SectionTitle(title: String) {
+    Text(
+        text = title,
+        color = Color.White,
+        fontSize = 20.sp,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+    )
+}
+
+@Composable
 fun MovieItem(
     movie: Movie,
     onClick: (Movie) -> Unit,
@@ -485,7 +512,6 @@ fun CelebrityItem(celeb: Celebrity, onClick: (Celebrity) -> Unit) {
         )
     }
 }
-
 
 @Composable
 fun WatchlistItem(

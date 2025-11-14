@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.example.movieapp"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.movieapp"
@@ -59,7 +59,10 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.ui.text)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+
     val composeBom = platform("androidx.compose:compose-bom:2024.10.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -89,7 +92,6 @@ dependencies {
     // Coil (for images)
     implementation("io.coil-kt:coil-compose:2.4.0")
 
-
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.3")
@@ -100,4 +102,6 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.0")
 
     implementation("androidx.compose.material:material-icons-extended:1.7.4")
+    implementation("com.google.firebase:firebase-auth-ktx:22.1.2")
+    implementation("com.google.firebase:firebase-firestore-ktx:24.8.1")
 }
