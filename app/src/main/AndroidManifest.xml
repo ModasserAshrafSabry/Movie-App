@@ -14,6 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MovieApplication">
         <activity
+            android:name="com.example.movieapplication.ui.Moviedetails.MovieDetails"
+            android:exported="false"
+            android:label="@string/title_activity_movie_details"
+            android:theme="@style/Theme.MovieApplication" />
+        <activity
             android:name="com.example.movieapplication.ui.Signin.SigninActivity"
             android:exported="false"
             android:label="@string/title_activity_signin"
