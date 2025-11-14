@@ -322,7 +322,6 @@ fun AppNavigation(
             )
         }
 
-        // ---------------- ACCOUNT SETTINGS ----------------
         composable("account_settings") {
             AccountSettingsScreen(
                 onLogout = {

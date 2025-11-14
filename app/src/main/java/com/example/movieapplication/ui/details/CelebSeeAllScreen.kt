@@ -84,7 +84,11 @@ fun CelebrityListScreen(
                     thickness = 1.dp
                 )
             }
+            item {
+                Spacer(modifier = Modifier.height(95.dp))
+            }
         }
+
     }
 }
 

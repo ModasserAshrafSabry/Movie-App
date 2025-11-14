@@ -65,19 +65,25 @@ fun SeeAllScreen(
         },
         containerColor = Color.Black
     ) { paddingValues ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 8.dp),
-            contentPadding = PaddingValues(vertical = 8.dp)
-        ) {
-            items(movies) { movie ->
-                MovieGridItem(
-                    movie = movie,
-                    onClick = { onMovieClick(movie) }
-                )
+        Column {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 8.dp),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                items(movies) { movie ->
+                    MovieGridItem(
+                        movie = movie,
+                        onClick = { onMovieClick(movie) }
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(85.dp))
+                }
             }
         }
     }
@@ -127,7 +133,7 @@ fun MovieGridItem(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = String.format("%.1f", movie.voteAverage ?: 0.0),
+                text = String.format("%.2f", movie.voteAverage ?: 0.0),
                 color = Color.Gray,
                 fontSize = 12.sp
             )
