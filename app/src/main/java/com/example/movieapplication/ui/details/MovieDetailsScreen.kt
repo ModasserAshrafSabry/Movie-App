@@ -204,7 +204,7 @@ fun MovieDetailsScreen(
         }
 
 // 🎬 Crew
-        if (crewList.value.isNotEmpty()) {
+        if (!crewList.value.isNullOrEmpty()) {
             Text(
                 text = "Crew",
                 color = Color.White,
@@ -214,17 +214,16 @@ fun MovieDetailsScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Column {
-                crewList.value.forEach { crew ->
+                crewList.value.take(5).forEach { crew ->
                     Text(
-                        text = "${crew.name} - ${crew.job ?: "N/A"}",
+                        text = "${crew.job ?: "Job"}: ${crew.name}",
                         color = Color.LightGray,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         modifier = Modifier.padding(vertical = 2.dp)
                     )
                 }
             }
         }
-
 
         Button(
             onClick = {
@@ -247,6 +246,8 @@ fun MovieDetailsScreen(
                 color = Color.White
             )
         }
+        Spacer(modifier = Modifier.height(120.dp))
+
 
         // ✅ رسالة تأكيد مؤقتة
         if (showMessage) {
