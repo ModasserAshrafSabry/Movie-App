@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import com.example.movieapp.data.MovieRepository
@@ -44,14 +46,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
+
+            // ⬅️ متغير نقدر نتحكم منه في إظهار وإخفاء الـ BottomBar
+            val showBottomBarState = remember { mutableStateOf(true) }
+
             MovieAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
 
-                    // ----------- التعديل المهم هنا -----------
-                    MainNavigationScaffold(viewModel = homeViewModel)
+                    MainNavigationScaffold(
+                        viewModel = homeViewModel,
+                        showBottomBarState = showBottomBarState
+                    )
                 }
             }
         }
     }
 }
-

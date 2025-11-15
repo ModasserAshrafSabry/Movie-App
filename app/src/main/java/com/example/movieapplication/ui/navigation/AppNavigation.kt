@@ -61,7 +61,6 @@ fun AppNavigation(
 ) {
     val gson = Gson()
 
-    // 100% FIX — نجبر الـ State تبقى non-null مع defaultValue
     val trendingMovies: List<Movie> =
         viewModel.trendingMovies.collectAsState(initial = emptyList()).value ?: emptyList()
 
@@ -107,7 +106,6 @@ fun AppNavigation(
 
                 onViewAllClick = { navController.navigate("watchlist") },
 
-                // ***** ERROR FIXED — trendingMovies = NON NULL LIST *****
                 onSeeAllClicked = {
                     val encoded = Uri.encode(gson.toJson(trendingMovies))
                     navController.navigate("SeeAllScreen?movieList=$encoded")
@@ -134,7 +132,6 @@ fun AppNavigation(
 
             val json = Uri.decode(backStackEntry.arguments?.getString("movieList") ?: "[]")
 
-            // FIX — نتأكد أنها List<Movie> وليس List<Movie>?
             val movies: List<Movie> = runCatching {
                 gson.fromJson(json, Array<Movie>::class.java)?.toList() ?: emptyList()
             }.getOrDefault(emptyList())
@@ -243,7 +240,7 @@ fun AppNavigation(
             )
         }
 
-        // ---------------- CONTENT TYPE (MOVIES / GENRES) ----------------
+        // ---------------- CONTENT TYPE ----------------
         composable(
             "SeeAllScreen?contentType={contentType}",
             arguments = listOf(navArgument("contentType") {
@@ -318,7 +315,12 @@ fun AppNavigation(
             ProfileScreen(
                 onNavigateToSettings = { navController.navigate("account_settings") },
                 onNavigateToCelebrity = {},
-                onNavigateToGenre = {}
+                onNavigateToGenre = {},
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -335,7 +337,6 @@ fun AppNavigation(
     }
 }
 
-// ---------------- JSON DECODER ----------------
 private fun decodeMovieJson(json: String, gson: Gson): Movie? {
     return try {
         gson.fromJson(json, Movie::class.java)

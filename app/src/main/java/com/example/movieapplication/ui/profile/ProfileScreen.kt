@@ -1,5 +1,6 @@
 package com.example.movieapp.ui.profile
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,7 +29,8 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(),
     onNavigateToSettings: () -> Unit = {},
     onNavigateToCelebrity: (String) -> Unit = {},
-    onNavigateToGenre: (String) -> Unit = {}
+    onNavigateToGenre: (String) -> Unit = {},
+    onLogout: () -> Unit = {}              // ← هنا نضيف lambda للـ logout
 ) {
     val profileState by viewModel.profileState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -43,6 +46,8 @@ fun ProfileScreen(
         }
         return
     }
+
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -71,6 +76,7 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+
             // Profile Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -108,7 +114,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Favorite Genres Section
+            // Favorite Genres
             Column {
                 Text(
                     text = "Favorite Genres",
@@ -137,7 +143,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Favorite Celebrities Section
+            // Favorite Celebrities
             Column {
                 Text(
                     text = "Favorite Celebrities",
@@ -190,6 +196,19 @@ fun ProfileScreen(
                         }
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Logout button — يستدعي onLogout (مش يعتمد على أي state خارجي)
+            Button(
+                onClick = {
+                    onLogout()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Logout", color = Color.White)
             }
         }
     }
