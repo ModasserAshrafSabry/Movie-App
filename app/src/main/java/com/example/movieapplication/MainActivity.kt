@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
             MovieAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
 
-                    // ----------- التعديل المهم هنا -----------
                     MainNavigationScaffold(viewModel = homeViewModel)
                 }
             }

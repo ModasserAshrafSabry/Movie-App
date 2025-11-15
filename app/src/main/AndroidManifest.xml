@@ -14,6 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MovieApplication">
         <activity
+            android:name="com.example.movieapplication.ui.watchlist.FavCeleb_Genre"
+            android:exported="false"
+            android:label="@string/title_activity_fav_celeb_genre"
+            android:theme="@style/Theme.MovieApplication" />
+        <activity
             android:name="com.example.movieapplication.ui.Signin.SigninActivity"
             android:exported="false"
             android:label="@string/title_activity_signin"

@@ -45,7 +45,7 @@ fun MainNavigationScaffold(
         }
     ) { innerPadding ->
         AppNavigation(
-            viewModel = viewModel,
+             viewModel = viewModel,
             navController = navController,
             modifier = Modifier.padding()
         )

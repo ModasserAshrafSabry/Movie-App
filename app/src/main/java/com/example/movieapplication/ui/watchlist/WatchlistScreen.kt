@@ -122,6 +122,10 @@ fun WatchlistScreen(
                     }
                     Divider(color = Color.DarkGray)
                 }
+
+                item {
+                    Spacer(modifier = Modifier.height(85.dp))
+                }
             }
         }
     }

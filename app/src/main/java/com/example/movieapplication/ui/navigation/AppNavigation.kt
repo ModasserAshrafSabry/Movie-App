@@ -3,7 +3,6 @@ package com.example.movieapp.ui.navigation
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -11,25 +10,27 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.movieapp.model.Movie
-import com.example.movieapp.model.Celebrity
 import com.example.movieapp.data.local.MovieEntity
-import com.example.movieapp.ui.details.MovieDetailsScreen
+import com.example.movieapp.model.Celebrity
+import com.example.movieapp.model.Movie
 import com.example.movieapp.ui.celebrity.CelebrityDetailsScreen
+import com.example.movieapp.ui.details.MovieDetailsScreen
 import com.example.movieapp.ui.home.HomeScreen
 import com.example.movieapp.ui.home.HomeViewModel
-import com.example.movieapp.ui.profile.ProfileScreen
+//import com.example.movieapp.ui.profile.ProfileScreen
 import com.example.movieapp.ui.search.SearchScreen
 import com.example.movieapp.ui.settings.AccountSettingsScreen
+import com.example.movieapp.ui.viewmodel.ProfileScreen
 import com.example.movieapp.ui.watchlist.WatchlistScreen
 import com.example.movieapplication.ui.Login.LoginScreen
 import com.example.movieapplication.ui.details.CelebrityListScreen
 import com.example.movieapplication.ui.details.Genre
 import com.example.movieapplication.ui.details.GenresScreen
 import com.example.movieapplication.ui.details.MovieGridScreen
-import com.example.movieapplication.ui.viewmodel.SearchViewModel
-import com.google.gson.Gson
 import com.example.movieapplication.ui.details.SeeAllScreen
+import com.example.movieapplication.ui.viewmodel.SearchViewModel
+import com.example.movieapplication.ui.viewmodel.SharedProfileViewModel
+import com.google.gson.Gson
 
 val genreList = listOf(
     Genre(28, "Action"),
@@ -61,12 +62,14 @@ fun AppNavigation(
 ) {
     val gson = Gson()
 
-    // 100% FIX — نجبر الـ State تبقى non-null مع defaultValue
     val trendingMovies: List<Movie> =
         viewModel.trendingMovies.collectAsState(initial = emptyList()).value ?: emptyList()
 
     val trendingCelebrities: List<Celebrity> =
         viewModel.trendingCelebrities.collectAsState(initial = emptyList()).value ?: emptyList()
+
+    // ------------------  SHARED PROFILE VIEWMODEL ------------------
+    val sharedProfileVM: SharedProfileViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -107,7 +110,6 @@ fun AppNavigation(
 
                 onViewAllClick = { navController.navigate("watchlist") },
 
-                // ***** ERROR FIXED — trendingMovies = NON NULL LIST *****
                 onSeeAllClicked = {
                     val encoded = Uri.encode(gson.toJson(trendingMovies))
                     navController.navigate("SeeAllScreen?movieList=$encoded")
@@ -134,11 +136,9 @@ fun AppNavigation(
 
             val json = Uri.decode(backStackEntry.arguments?.getString("movieList") ?: "[]")
 
-            // FIX — نتأكد أنها List<Movie> وليس List<Movie>?
             val movies: List<Movie> = runCatching {
                 gson.fromJson(json, Array<Movie>::class.java)?.toList() ?: emptyList()
             }.getOrDefault(emptyList())
-
 
             SeeAllScreen(
                 movies = movies,
@@ -163,7 +163,6 @@ fun AppNavigation(
             val celebrities: List<Celebrity> = runCatching {
                 gson.fromJson(json, Array<Celebrity>::class.java)?.toList() ?: emptyList()
             }.getOrDefault(emptyList())
-
 
             CelebrityListScreen(
                 celebrities = celebrities,
@@ -191,6 +190,8 @@ fun AppNavigation(
 
         // ---------------- SEARCH ----------------
         composable("search") {
+
+            val searchVM: SearchViewModel = viewModel()
 
             SearchScreen(
                 viewModel = viewModel,
@@ -316,6 +317,7 @@ fun AppNavigation(
         // ---------------- PROFILE ----------------
         composable("profile") {
             ProfileScreen(
+                sharedViewModel = sharedProfileVM,
                 onNavigateToSettings = { navController.navigate("account_settings") },
                 onNavigateToCelebrity = {},
                 onNavigateToGenre = {}
@@ -334,7 +336,6 @@ fun AppNavigation(
     }
 }
 
-// ---------------- JSON DECODER ----------------
 private fun decodeMovieJson(json: String, gson: Gson): Movie? {
     return try {
         gson.fromJson(json, Movie::class.java)

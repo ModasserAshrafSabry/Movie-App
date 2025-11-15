@@ -689,6 +689,9 @@ fun SearchScreen(
                     )
                 }
             }
+
+            // Spacer for bottom navigation bar
+            Spacer(modifier = Modifier.height(85.dp))
         }
 
         if (showSuggestions && suggestions.isNotEmpty()) {

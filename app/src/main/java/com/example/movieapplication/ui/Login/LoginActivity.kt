@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.movieapp.MainActivity
+import com.example.movieapp.ui.theme.MovieAppTheme
 import com.example.movieapplication.ui.Login.ui.theme.MovieApplicationTheme
 import com.example.movieapplication.ui.Signin.SigninActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -46,7 +47,7 @@ class LoginActivity : ComponentActivity() {
         auth = FirebaseAuth.getInstance()
 
         setContent {
-            MovieApplicationTheme {
+            MovieAppTheme {
                 @Suppress("UnusedMaterial3ScaffoldPaddingParameter")
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -253,7 +254,7 @@ fun LoginScreen(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun LoginScreenPreview() {
-    MovieApplicationTheme {
+    MovieAppTheme {
         LoginScreen()
     }
 }
