@@ -35,10 +35,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.movieapp.ui.theme.MovieAppTheme
 import com.example.movieapplication.ui.Login.LoginActivity
 import com.example.movieapplication.ui.Signin.ui.theme.MovieApplicationTheme
-import com.example.movieapplication.ui.watchlist.FavCeleb_Genre
 import com.google.firebase.auth.FirebaseAuth
 
 @Suppress("UnusedMaterial3ScaffoldPaddingParameter")
@@ -52,7 +50,7 @@ class SigninActivity : ComponentActivity() {
         auth = FirebaseAuth.getInstance()
 
         setContent {
-            MovieAppTheme {
+            MovieApplicationTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     contentWindowInsets = WindowInsets(0)
@@ -88,7 +86,7 @@ class SigninActivity : ComponentActivity() {
                                                     Toast.LENGTH_LONG
                                                 ).show()
                                                 auth.signOut()
-                                                startActivity(Intent(this, FavCeleb_Genre::class.java))
+                                                startActivity(Intent(this, LoginActivity::class.java))
                                                 finish()
                                             } else {
                                                 Toast.makeText(

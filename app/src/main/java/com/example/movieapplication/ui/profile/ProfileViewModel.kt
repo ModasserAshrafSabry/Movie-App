@@ -25,11 +25,35 @@ class ProfileViewModel : ViewModel() {
         loadUserProfile()
     }
 
+    fun clearProfileData() {
+        // Reset profile state to initial values
+        _profileState.value = ProfileState()
+        _isLoading.value = false
+    }
+
+    // Call this when user logs in with a different account
+    fun reloadProfile() {
+        clearProfileData()
+        loadUserProfile()
+    }
+
     fun loadUserProfile() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 val currentUser = auth.currentUser
+
+                // ✅ ADD THIS CHECK
+                if (currentUser == null || !currentUser.isEmailVerified) {
+                    _profileState.value = ProfileState(
+                        username = "Please login",
+                        email = "",
+                        favoriteGenres = emptyList(),
+                        favoriteCelebrities = emptyList()
+                    )
+                    return@launch
+                }
+
                 if (currentUser != null) {
                     // Get user data from Firestore
                     val userDoc = db.collection("users").document(currentUser.uid).get().await()
@@ -57,15 +81,12 @@ class ProfileViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                // If Firebase fails, use mock data
+                // If Firebase fails, show empty state
                 _profileState.value = ProfileState(
-                    username = "Movie Lover",
-                    email = "user@example.com",
-                    favoriteGenres = listOf("Action", "Drama", "Sci-Fi"),
-                    favoriteCelebrities = listOf(
-                        FavoriteCelebrity("1", "Tom Hanks", "Actor"),
-                        FavoriteCelebrity("2", "Christopher Nolan", "Director")
-                    )
+                    username = "Error loading profile",
+                    email = "",
+                    favoriteGenres = emptyList(),
+                    favoriteCelebrities = emptyList()
                 )
             } finally {
                 _isLoading.value = false
@@ -75,8 +96,12 @@ class ProfileViewModel : ViewModel() {
 
     private suspend fun createUserDocument(userId: String) {
         val currentUser = auth.currentUser
+
+        // Use email prefix as temporary username until we get real data
+        val tempUsername = currentUser?.email?.substringBefore("@") ?: "User"
+
         val userData = hashMapOf(
-            "username" to (currentUser?.displayName ?: "User"),
+            "username" to tempUsername,
             "email" to (currentUser?.email ?: ""),
             "favoriteGenres" to emptyList<String>(),
             "favoriteCelebrities" to emptyList<Map<String, String>>(),
@@ -86,7 +111,7 @@ class ProfileViewModel : ViewModel() {
         db.collection("users").document(userId).set(userData).await()
 
         _profileState.value = ProfileState(
-            username = currentUser?.displayName ?: "User",
+            username = tempUsername,
             email = currentUser?.email ?: "",
             profileImageUrl = "",
             favoriteGenres = emptyList(),

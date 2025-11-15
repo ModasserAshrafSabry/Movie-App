@@ -31,6 +31,15 @@ fun AccountSettingsScreen(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.Black
                 ),
+                navigationIcon = {
+                    IconButton(onClick = { /* Handle back */ }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                }
             )
         },
         containerColor = Color.Black
@@ -53,9 +62,8 @@ fun AccountSettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .fillMaxSize()
                 .padding(16.dp)
-                .padding(bottom = 30.dp)
         ) {
-
+            // Username Section
             Column {
                 Text(
                     text = "Username",
@@ -172,8 +180,6 @@ fun AccountSettingsScreen(
                 ) {
                     Text("Logout")
                 }
-                Spacer(modifier = Modifier.height(60.dp))
-
             }
         }
     }
