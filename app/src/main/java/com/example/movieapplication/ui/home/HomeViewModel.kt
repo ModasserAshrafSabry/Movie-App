@@ -23,19 +23,11 @@ class HomeViewModel(
     val trendingCelebrities: StateFlow<List<Celebrity>> = _trendingCelebrities.asStateFlow()
 
     val watchlist = watchlistRepository.getAllMovies()
-    private val _watchlist = MutableStateFlow<List<MovieEntity>>(emptyList())
 
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage.asStateFlow()
     init {
         fetchTrendingData()
-    }
-    fun clearAllData() {
-        // Clear all cached data
-        _trendingMovies.value = emptyList()
-        _trendingCelebrities.value = emptyList()
-        _watchlist.value = emptyList()
-        _snackbarMessage.value = null
     }
 
     private fun fetchTrendingData() {
@@ -96,6 +88,4 @@ class HomeViewModel(
     fun clearSnackbarMessage() {
         _snackbarMessage.value = null
     }
-
-
 }

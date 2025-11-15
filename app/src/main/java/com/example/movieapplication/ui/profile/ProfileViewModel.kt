@@ -75,12 +75,8 @@ class ProfileViewModel : ViewModel() {
 
     private suspend fun createUserDocument(userId: String) {
         val currentUser = auth.currentUser
-
-        // Use email prefix as temporary username until we get real data
-        val tempUsername = currentUser?.email?.substringBefore("@") ?: "User"
-
         val userData = hashMapOf(
-            "username" to tempUsername,
+            "username" to (currentUser?.displayName ?: "User"),
             "email" to (currentUser?.email ?: ""),
             "favoriteGenres" to emptyList<String>(),
             "favoriteCelebrities" to emptyList<Map<String, String>>(),
@@ -90,7 +86,7 @@ class ProfileViewModel : ViewModel() {
         db.collection("users").document(userId).set(userData).await()
 
         _profileState.value = ProfileState(
-            username = tempUsername,
+            username = currentUser?.displayName ?: "User",
             email = currentUser?.email ?: "",
             profileImageUrl = "",
             favoriteGenres = emptyList(),
