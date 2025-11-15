@@ -323,7 +323,6 @@ fun AppNavigation(
                 onLogout = {
                     // Clear all ViewModel data before logout
                     viewModel.clearAllData()
-                    profileViewModel.clearProfileData()
 
                     // Navigate to login
                     navController.navigate("login") {
@@ -336,13 +335,9 @@ fun AppNavigation(
         // ---------------- ACCOUNT SETTINGS ----------------
         composable("account_settings") {
             AccountSettingsScreen(
-                onBackClick = { navController.popBackStack() },
+                onBackClick = { navController.popBackStack() }, // ← Add this
                 onLogout = {
-                    // Clear all ViewModel data before logout
-                    viewModel.clearAllData()
-                    profileViewModel.clearProfileData()
-
-                    // Navigate to login
+                    // Navigate to login screen and clear back stack
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
