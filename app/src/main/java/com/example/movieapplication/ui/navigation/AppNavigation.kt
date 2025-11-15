@@ -19,6 +19,7 @@ import com.example.movieapp.ui.celebrity.CelebrityDetailsScreen
 import com.example.movieapp.ui.home.HomeScreen
 import com.example.movieapp.ui.home.HomeViewModel
 import com.example.movieapp.ui.profile.ProfileScreen
+import com.example.movieapp.ui.profile.ProfileViewModel
 import com.example.movieapp.ui.search.SearchScreen
 import com.example.movieapp.ui.settings.AccountSettingsScreen
 import com.example.movieapp.ui.watchlist.WatchlistScreen
@@ -61,12 +62,13 @@ fun AppNavigation(
 ) {
     val gson = Gson()
 
-    // 100% FIX — نجبر الـ State تبقى non-null مع defaultValue
     val trendingMovies: List<Movie> =
         viewModel.trendingMovies.collectAsState(initial = emptyList()).value ?: emptyList()
 
     val trendingCelebrities: List<Celebrity> =
         viewModel.trendingCelebrities.collectAsState(initial = emptyList()).value ?: emptyList()
+
+    val profileViewModel: ProfileViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -107,7 +109,6 @@ fun AppNavigation(
 
                 onViewAllClick = { navController.navigate("watchlist") },
 
-                // ***** ERROR FIXED — trendingMovies = NON NULL LIST *****
                 onSeeAllClicked = {
                     val encoded = Uri.encode(gson.toJson(trendingMovies))
                     navController.navigate("SeeAllScreen?movieList=$encoded")
@@ -134,7 +135,6 @@ fun AppNavigation(
 
             val json = Uri.decode(backStackEntry.arguments?.getString("movieList") ?: "[]")
 
-            // FIX — نتأكد أنها List<Movie> وليس List<Movie>?
             val movies: List<Movie> = runCatching {
                 gson.fromJson(json, Array<Movie>::class.java)?.toList() ?: emptyList()
             }.getOrDefault(emptyList())
@@ -243,7 +243,7 @@ fun AppNavigation(
             )
         }
 
-        // ---------------- CONTENT TYPE (MOVIES / GENRES) ----------------
+        // ---------------- CONTENT TYPE ----------------
         composable(
             "SeeAllScreen?contentType={contentType}",
             arguments = listOf(navArgument("contentType") {
@@ -316,16 +316,33 @@ fun AppNavigation(
         // ---------------- PROFILE ----------------
         composable("profile") {
             ProfileScreen(
+                viewModel = profileViewModel,
                 onNavigateToSettings = { navController.navigate("account_settings") },
-                onNavigateToCelebrity = {},
-                onNavigateToGenre = {}
+                onNavigateToCelebrity = { celebrityId -> },
+                onNavigateToGenre = { genre -> },
+                onLogout = {
+                    // Clear all ViewModel data before logout
+                    viewModel.clearAllData()
+                    profileViewModel.clearProfileData()
+
+                    // Navigate to login
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                }
             )
         }
 
         // ---------------- ACCOUNT SETTINGS ----------------
         composable("account_settings") {
             AccountSettingsScreen(
+                onBackClick = { navController.popBackStack() },
                 onLogout = {
+                    // Clear all ViewModel data before logout
+                    viewModel.clearAllData()
+                    profileViewModel.clearProfileData()
+
+                    // Navigate to login
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
@@ -335,7 +352,6 @@ fun AppNavigation(
     }
 }
 
-// ---------------- JSON DECODER ----------------
 private fun decodeMovieJson(json: String, gson: Gson): Movie? {
     return try {
         gson.fromJson(json, Movie::class.java)

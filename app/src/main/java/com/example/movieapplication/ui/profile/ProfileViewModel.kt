@@ -25,35 +25,11 @@ class ProfileViewModel : ViewModel() {
         loadUserProfile()
     }
 
-    fun clearProfileData() {
-        // Reset profile state to initial values
-        _profileState.value = ProfileState()
-        _isLoading.value = false
-    }
-
-    // Call this when user logs in with a different account
-    fun reloadProfile() {
-        clearProfileData()
-        loadUserProfile()
-    }
-
     fun loadUserProfile() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 val currentUser = auth.currentUser
-
-                // ✅ ADD THIS CHECK
-                if (currentUser == null || !currentUser.isEmailVerified) {
-                    _profileState.value = ProfileState(
-                        username = "Please login",
-                        email = "",
-                        favoriteGenres = emptyList(),
-                        favoriteCelebrities = emptyList()
-                    )
-                    return@launch
-                }
-
                 if (currentUser != null) {
                     // Get user data from Firestore
                     val userDoc = db.collection("users").document(currentUser.uid).get().await()
@@ -81,12 +57,15 @@ class ProfileViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                // If Firebase fails, show empty state
+                // If Firebase fails, use mock data
                 _profileState.value = ProfileState(
-                    username = "Error loading profile",
-                    email = "",
-                    favoriteGenres = emptyList(),
-                    favoriteCelebrities = emptyList()
+                    username = "Movie Lover",
+                    email = "user@example.com",
+                    favoriteGenres = listOf("Action", "Drama", "Sci-Fi"),
+                    favoriteCelebrities = listOf(
+                        FavoriteCelebrity("1", "Tom Hanks", "Actor"),
+                        FavoriteCelebrity("2", "Christopher Nolan", "Director")
+                    )
                 )
             } finally {
                 _isLoading.value = false
