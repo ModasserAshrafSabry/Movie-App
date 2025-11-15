@@ -35,6 +35,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.movieapp.ui.theme.MovieAppTheme
 import com.example.movieapplication.ui.Login.LoginActivity
 import com.example.movieapplication.ui.Signin.ui.theme.MovieApplicationTheme
 import com.google.firebase.auth.FirebaseAuth
@@ -53,7 +54,7 @@ class SigninActivity : ComponentActivity() {
         db = FirebaseFirestore.getInstance() // Initialize Firestore
 
         setContent {
-            MovieApplicationTheme {
+            MovieAppTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     contentWindowInsets = WindowInsets(0)
@@ -307,13 +308,5 @@ fun SigninScreen(
                 modifier = Modifier.clickable(onClick = onLoginClick)
             )
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun SigninScreenPreview() {
-    MovieApplicationTheme {
-        SigninScreen()
     }
 }

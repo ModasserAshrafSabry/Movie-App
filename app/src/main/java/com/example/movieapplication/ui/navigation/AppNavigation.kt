@@ -320,27 +320,26 @@ fun AppNavigation(
                 onNavigateToSettings = { navController.navigate("account_settings") },
                 onNavigateToCelebrity = { celebrityId -> },
                 onNavigateToGenre = { genre -> },
-                onLogout = {
-                    // Clear all ViewModel data before logout
-                    viewModel.clearAllData()
-                    profileViewModel.clearProfileData()
-
-                    // Navigate to login
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                }
+//                onLogout = {
+//                    viewModel.clearAllData()
+//                   // profileViewModel.clearProfileData()
+//
+//                    // Navigate to login
+//                    navController.navigate("login") {
+//                        popUpTo("home") { inclusive = true }
+//                    }
+//                }
             )
         }
 
         // ---------------- ACCOUNT SETTINGS ----------------
         composable("account_settings") {
             AccountSettingsScreen(
-                onBackClick = { navController.popBackStack() },
+                //onBackClick = { navController.popBackStack() },
                 onLogout = {
                     // Clear all ViewModel data before logout
                     viewModel.clearAllData()
-                    profileViewModel.clearProfileData()
+                  //  profileViewModel.clearProfileData()
 
                     // Navigate to login
                     navController.navigate("login") {
