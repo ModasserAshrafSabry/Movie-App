@@ -1,18 +1,25 @@
 package com.example.movieapp.ui.details
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -86,22 +93,83 @@ fun MovieDetailsScreen(
             Text("← Back", color = Color.White, fontSize = 16.sp)
         }
 
-        // 🎞️ صورة الفيلم
-        Image(
-            painter = rememberAsyncImagePainter(
-                model = posterPath?.let {
-                    if (it.startsWith("http")) it else "https://image.tmdb.org/t/p/w500/${it.trimStart('/')}"
-                } ?: "https://via.placeholder.com/500x750?text=No+Image"
-            ),
-            contentDescription = title,
+        // 🎬 عرض صورة الخلفية + أيقونة التشغيل
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop
-        )
+                .height(350.dp)
+                .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+        ) {
+            // الخلفية (backdrop)
+            val backdropUrl = when (movie) {
+                is Movie -> movie.backdropPath?.let {
+                    "https://image.tmdb.org/t/p/w780/${it.trimStart('/')}"
+                }
 
-        Spacer(modifier = Modifier.height(16.dp))
+                else -> null
+            } ?: "https://via.placeholder.com/500x300?text=No+Image"
+
+            Image(
+                painter = rememberAsyncImagePainter(backdropUrl),
+                contentDescription = "Backdrop",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            // طبقة شفافة فوق الصورة
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f))
+                        )
+                    )
+            )
+
+            // زر التشغيل (التريلر)
+            IconButton(
+                onClick = {
+                    val trailerUrl = "https://www.youtube.com/results?search_query=${
+                        movie.let {
+                            if (it is Movie) it.title else "movie trailer"
+                        }
+                    }"
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(trailerUrl))
+                    context.startActivity(intent)
+                },
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(64.dp)
+                    .background(Color.White.copy(alpha = 0.25f), shape = CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Play Trailer",
+                    tint = Color.White,
+                    modifier = Modifier.size(48.dp)
+                )
+            }
+        }
+
+// 🎞️ البوستر (خارج الـ Box علشان ما يتقصش)
+        val posterUrl = when (movie) {
+            is Movie -> movie.posterPath?.let {
+                "https://image.tmdb.org/t/p/w500/${it.trimStart('/')}"
+            }
+
+            else -> null
+        } ?: "https://via.placeholder.com/150x200?text=No+Image"
+
+        Image(
+            painter = rememberAsyncImagePainter(posterUrl),
+            contentDescription = "Poster",
+            modifier = Modifier
+                .offset(x = 16.dp, y = (-70).dp) // يطلع فوق شوية عشان يتداخل مع الخلفية
+                .size(width = 120.dp, height = 180.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+        )
 
         // 🎬 عنوان الفيلم
         Text(text = title, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
@@ -139,7 +207,8 @@ fun MovieDetailsScreen(
             if (movie is Movie) {
                 try {
                     val repo = MovieRepository()  // أو inject لو عندك DI
-                    val credits = repo.getMovieCredits(movie.id)  // دالة جديدة في الريبو لازم تعملها
+                    val credits =
+                        repo.getMovieCredits(movie.id)  // دالة جديدة في الريبو لازم تعملها
                     castList.value = credits.cast
                     crewList.value = credits.crew
                 } catch (e: Exception) {
@@ -173,7 +242,11 @@ fun MovieDetailsScreen(
                         Image(
                             painter = rememberAsyncImagePainter(
                                 model = cast.profile_path?.let {
-                                    if (it.startsWith("http")) it else "https://image.tmdb.org/t/p/w200/${it.trimStart('/')}"
+                                    if (it.startsWith("http")) it else "https://image.tmdb.org/t/p/w200/${
+                                        it.trimStart(
+                                            '/'
+                                        )
+                                    }"
                                 } ?: "https://via.placeholder.com/100x150?text=No+Image"
                             ),
                             contentDescription = cast.name,
@@ -224,6 +297,7 @@ fun MovieDetailsScreen(
                 }
             }
         }
+        Spacer(modifier = Modifier.height(8.dp))
 
         Button(
             onClick = {
