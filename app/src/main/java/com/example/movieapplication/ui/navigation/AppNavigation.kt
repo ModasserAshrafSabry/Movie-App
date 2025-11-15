@@ -19,6 +19,7 @@ import com.example.movieapp.ui.celebrity.CelebrityDetailsScreen
 import com.example.movieapp.ui.home.HomeScreen
 import com.example.movieapp.ui.home.HomeViewModel
 import com.example.movieapp.ui.profile.ProfileScreen
+import com.example.movieapp.ui.profile.ProfileViewModel
 import com.example.movieapp.ui.search.SearchScreen
 import com.example.movieapp.ui.settings.AccountSettingsScreen
 import com.example.movieapp.ui.watchlist.WatchlistScreen
@@ -66,6 +67,8 @@ fun AppNavigation(
 
     val trendingCelebrities: List<Celebrity> =
         viewModel.trendingCelebrities.collectAsState(initial = emptyList()).value ?: emptyList()
+
+    val profileViewModel: ProfileViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -313,10 +316,16 @@ fun AppNavigation(
         // ---------------- PROFILE ----------------
         composable("profile") {
             ProfileScreen(
+                viewModel = profileViewModel,
                 onNavigateToSettings = { navController.navigate("account_settings") },
-                onNavigateToCelebrity = {},
-                onNavigateToGenre = {},
+                onNavigateToCelebrity = { celebrityId -> },
+                onNavigateToGenre = { genre -> },
                 onLogout = {
+                    // Clear all ViewModel data before logout
+                    viewModel.clearAllData()
+                    profileViewModel.clearProfileData()
+
+                    // Navigate to login
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
@@ -327,7 +336,13 @@ fun AppNavigation(
         // ---------------- ACCOUNT SETTINGS ----------------
         composable("account_settings") {
             AccountSettingsScreen(
+                onBackClick = { navController.popBackStack() },
                 onLogout = {
+                    // Clear all ViewModel data before logout
+                    viewModel.clearAllData()
+                    profileViewModel.clearProfileData()
+
+                    // Navigate to login
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }

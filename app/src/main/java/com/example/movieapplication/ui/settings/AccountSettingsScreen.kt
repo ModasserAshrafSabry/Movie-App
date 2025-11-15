@@ -19,6 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun AccountSettingsScreen(
     viewModel: AccountSettingsViewModel = viewModel(),
+    onBackClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val settingsState by viewModel.settingsState.collectAsState()
@@ -32,7 +33,7 @@ fun AccountSettingsScreen(
                     containerColor = Color.Black
                 ),
                 navigationIcon = {
-                    IconButton(onClick = { /* Handle back */ }) {
+                    IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back",

@@ -38,16 +38,19 @@ import androidx.compose.ui.unit.sp
 import com.example.movieapplication.ui.Login.LoginActivity
 import com.example.movieapplication.ui.Signin.ui.theme.MovieApplicationTheme
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Suppress("UnusedMaterial3ScaffoldPaddingParameter")
 class SigninActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore // Add this
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance() // Initialize Firestore
 
         setContent {
             MovieApplicationTheme {
@@ -78,23 +81,48 @@ class SigninActivity : ComponentActivity() {
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         val user = auth.currentUser
-                                        user?.sendEmailVerification()?.addOnCompleteListener { verifyTask ->
-                                            if (verifyTask.isSuccessful) {
-                                                Toast.makeText(
-                                                    this,
-                                                    "Account created! Please check your email to verify your account.",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-                                                auth.signOut()
-                                                startActivity(Intent(this, LoginActivity::class.java))
-                                                finish()
-                                            } else {
-                                                Toast.makeText(
-                                                    this,
-                                                    "Couldn't send verification email: ${verifyTask.exception?.message}",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
+
+                                        // ✅ SAVE USERNAME TO FIRESTORE - ADD THIS CODE
+                                        if (user != null) {
+                                            val userData = hashMapOf(
+                                                "username" to username, // Save the actual username
+                                                "email" to email,
+                                                "favoriteGenres" to emptyList<String>(),
+                                                "favoriteCelebrities" to emptyList<Map<String, String>>(),
+                                                "createdAt" to com.google.firebase.Timestamp.now()
+                                            )
+
+                                            db.collection("users").document(user.uid)
+                                                .set(userData)
+                                                .addOnCompleteListener { firestoreTask ->
+                                                    if (firestoreTask.isSuccessful) {
+                                                        // Now send verification email
+                                                        user.sendEmailVerification().addOnCompleteListener { verifyTask ->
+                                                            if (verifyTask.isSuccessful) {
+                                                                Toast.makeText(
+                                                                    this,
+                                                                    "Account created! Please check your email to verify your account.",
+                                                                    Toast.LENGTH_LONG
+                                                                ).show()
+                                                                auth.signOut()
+                                                                startActivity(Intent(this, LoginActivity::class.java))
+                                                                finish()
+                                                            } else {
+                                                                Toast.makeText(
+                                                                    this,
+                                                                    "Couldn't send verification email: ${verifyTask.exception?.message}",
+                                                                    Toast.LENGTH_SHORT
+                                                                ).show()
+                                                            }
+                                                        }
+                                                    } else {
+                                                        Toast.makeText(
+                                                            this,
+                                                            "Error saving user data: ${firestoreTask.exception?.message}",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    }
+                                                }
                                         }
                                     } else {
                                         Toast.makeText(

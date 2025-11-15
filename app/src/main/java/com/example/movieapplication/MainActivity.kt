@@ -1,5 +1,6 @@
 package com.example.movieapp
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,8 +20,11 @@ import com.example.movieapp.ui.navigation.MainNavigationScaffold
 import com.example.movieapp.ui.theme.MovieAppTheme
 import com.example.movieapp.viewmodel.WatchlistViewModel
 import com.example.movieapp.viewmodel.WatchlistViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
+
+    private val auth = FirebaseAuth.getInstance() // Add Firebase Auth
 
     private val homeViewModel: HomeViewModel by lazy {
         val movieRepository = MovieRepository()
@@ -44,6 +48,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
+
+        // ✅ ADD AUTHENTICATION CHECK HERE
+        val currentUser = auth.currentUser
+        if (currentUser == null || !currentUser.isEmailVerified) {
+            // Redirect to login if not authenticated or not verified
+            startActivity(Intent(this, com.example.movieapplication.ui.Login.LoginActivity::class.java))
+            finish()
+            return
+        }
 
         setContent {
 

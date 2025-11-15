@@ -83,7 +83,11 @@ class LoginActivity : ComponentActivity() {
                     if (user != null && user.isEmailVerified) {
                         Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
 
-                        startActivity(Intent(this, MainActivity::class.java))
+                        // ✅ Add FLAGS to clear activity stack
+                        val intent = Intent(this, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        startActivity(intent)
                         finish()
                     } else {
                         Toast.makeText(this, "Please verify your email first", Toast.LENGTH_LONG).show()

@@ -164,6 +164,7 @@ class AccountSettingsViewModel : ViewModel() {
     }
 
     fun logout() {
+        _settingsState.value = AccountSettingsState()
         auth.signOut()
     }
 }
