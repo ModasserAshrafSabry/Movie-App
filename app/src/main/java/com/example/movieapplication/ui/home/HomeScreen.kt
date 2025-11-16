@@ -84,7 +84,7 @@ fun HomeScreen(
         ) {
             // 🎬 اللافتة الدعائية
             if (trendingMovies.isNotEmpty()) {
-                val topMovie = trendingMovies.first()
+                val topMovie = trendingMovies.last()
                 val backdropUrl = topMovie.backdropPath?.let {
                     if (it.startsWith("/")) "https://image.tmdb.org/t/p/w500$it"
                     else "https://image.tmdb.org/t/p/w500/$it"
@@ -184,13 +184,14 @@ fun HomeScreen(
                                 .align(Alignment.BottomStart)
                                 .offset(x = 170.dp, y = 40.dp)
                         ) {
+                            Row (modifier = Modifier.width(200.dp)){
                             Text(
                                 text = topMovie.title ?: "Untitled",
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 17.sp,
                                 maxLines = 2
-                            )
+                            )}
                             Spacer(modifier = Modifier.height(6.dp))
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
