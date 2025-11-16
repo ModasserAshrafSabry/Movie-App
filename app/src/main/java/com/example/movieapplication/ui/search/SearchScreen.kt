@@ -35,6 +35,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -47,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -85,8 +87,13 @@ fun SearchScreen(
     val errorMsg by searchViewModel.errorMsg
     val popularMovies by searchViewModel.popularMovies.collectAsState()
     val watchlist by viewModel.watchlist.collectAsState(initial = emptyList())
+
+    val celebs by viewModel.trendingCelebrities.collectAsState()
+
     val showDefaultSections =
-        movieSearchResults.isEmpty() && celebSearchResults.isEmpty() && !isLoading && errorMsg == null
+        movieSearchResults.isEmpty()
+                && celebSearchResults.isEmpty()
+                && !isLoading && errorMsg == null
 
     var favoriteMovies by remember { mutableStateOf(setOf<Int>()) }
 
@@ -370,6 +377,9 @@ fun SearchScreen(
                 }
 
                 showDefaultSections -> {
+
+                    // Movies Sections
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -441,11 +451,12 @@ fun SearchScreen(
 
                                         IconButton(
                                             onClick = {
-                                                favoriteMovies = if (favoriteMovies.contains(movieId)) {
-                                                    favoriteMovies - movieId
-                                                } else {
-                                                    favoriteMovies + movieId
-                                                }
+                                                favoriteMovies =
+                                                    if (favoriteMovies.contains(movieId)) {
+                                                        favoriteMovies - movieId
+                                                    } else {
+                                                        favoriteMovies + movieId
+                                                    }
                                             },
                                             modifier = Modifier
                                                 .align(Alignment.TopEnd)
@@ -515,11 +526,12 @@ fun SearchScreen(
 
                                         IconButton(
                                             onClick = {
-                                                favoriteMovies = if (favoriteMovies.contains(movieId)) {
-                                                    favoriteMovies - movieId
-                                                } else {
-                                                    favoriteMovies + movieId
-                                                }
+                                                favoriteMovies =
+                                                    if (favoriteMovies.contains(movieId)) {
+                                                        favoriteMovies - movieId
+                                                    } else {
+                                                        favoriteMovies + movieId
+                                                    }
                                             },
                                             modifier = Modifier
                                                 .align(Alignment.TopEnd)
@@ -543,7 +555,9 @@ fun SearchScreen(
                         }
                     }
 
+
                     Spacer(modifier = Modifier.height(16.dp))
+
 
                     // Explore Genres Section
                     Column(
@@ -572,7 +586,6 @@ fun SearchScreen(
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
-
                             Text(
                                 text = "See all",
                                 color = Color(0xFFcefc00),
@@ -582,95 +595,288 @@ fun SearchScreen(
                                 modifier = Modifier.clickable { onSeeAllClick("genres") }
                             )
                         }
-
                         Spacer(modifier = Modifier.height(16.dp))
-
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             repeat(2) { index ->
-                                Column(
-                                    modifier = Modifier.weight(1f)
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .aspectRatio(2f / 3f)
+                                        .clip(RoundedCornerShape(12.dp))
                                 ) {
+                                    if (index == 0) {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(R.drawable.shawshank),
+                                            contentDescription = "Movie poster",
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clickable { onSeeAllClick("genre_18") },
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(R.drawable.shutter),
+                                            contentDescription = "Movie poster",
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clickable { onSeeAllClick("genre_53") },
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    }
+
                                     Box(
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .aspectRatio(2f / 3f)
-                                            .clip(RoundedCornerShape(12.dp))
-                                    ) {
-                                        if (index == 0) {
-                                            Image(
-                                                painter = rememberAsyncImagePainter(R.drawable.shawshank),
-                                                contentDescription = "Movie poster",
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .clickable { onSeeAllClick("genre_18") },
-                                                contentScale = ContentScale.Crop
+                                            .fillMaxSize()
+                                            .background(
+                                                Brush.verticalGradient(
+                                                    colors = listOf(
+                                                        Color.Transparent,
+                                                        Color.Black.copy(alpha = 0.7f)
+                                                    ),
+                                                    startY = 200f
+                                                )
                                             )
-                                        } else {
-                                            Image(
-                                                painter = rememberAsyncImagePainter(R.drawable.shutter),
-                                                contentDescription = "Movie poster",
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .clickable { onSeeAllClick("genre_53") },
-                                                contentScale = ContentScale.Crop
-                                            )
-                                        }
-                                    }
+                                    )
+
                                     Text(
                                         text = if (index == 0) "Drama" else "Thriller",
                                         color = Color.White,
                                         fontSize = 16.sp,
-                                        modifier = Modifier.padding(top = 8.dp)
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier
+                                            .align(Alignment.BottomStart)
+                                            .padding(12.dp)
                                     )
                                 }
                             }
                         }
-
                         Spacer(modifier = Modifier.height(5.dp))
-
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             repeat(2) { index ->
-                                Column(
-                                    modifier = Modifier.weight(1f)
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .aspectRatio(2f / 3f)
+                                        .clip(RoundedCornerShape(12.dp))
                                 ) {
+                                    if (index == 0) {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(R.drawable.oppenheimer),
+                                            contentDescription = "Movie poster",
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clickable { onSeeAllClick("genre_27") },
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    } else {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(R.drawable.wolf),
+                                            contentDescription = "Movie poster",
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clickable { onSeeAllClick("genre_35") },
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    }
                                     Box(
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .aspectRatio(2f / 3f)
-                                            .clip(RoundedCornerShape(12.dp))
-                                    ) {
-                                        if (index == 0) {
-                                            Image(
-                                                painter = rememberAsyncImagePainter(R.drawable.oppenheimer),
-                                                contentDescription = "Movie poster",
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .clickable { onSeeAllClick("genre_27") },
-                                                contentScale = ContentScale.Crop
+                                            .fillMaxSize()
+                                            .background(
+                                                Brush.verticalGradient(
+                                                    colors = listOf(
+                                                        Color.Transparent,
+                                                        Color.Black.copy(alpha = 0.7f)
+                                                    ),
+                                                    startY = 200f
+                                                )
                                             )
-                                        } else {
-                                            Image(
-                                                painter = rememberAsyncImagePainter(R.drawable.wolf),
-                                                contentDescription = "Movie poster",
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .clickable { onSeeAllClick("genre_35") },
-                                                contentScale = ContentScale.Crop
-                                            )
-                                        }
-                                    }
+                                    )
+
                                     Text(
                                         text = if (index == 0) "Horror" else "Comedy",
                                         color = Color.White,
                                         fontSize = 16.sp,
-                                        modifier = Modifier.padding(top = 8.dp)
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier
+                                            .align(Alignment.BottomStart)
+                                            .padding(12.dp)
                                     )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    //Explore Celebrities Section
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF1C1C1E))
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "🎭",
+                                    fontSize = 24.sp
+                                )
+                                Text(
+                                    text = "Explore Celebrities",
+                                    color = Color.White,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            Text(
+                                text = "See all",
+                                color = Color(0xFFcefc00),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                textDecoration = TextDecoration.Underline,
+                                modifier = Modifier.clickable { onSeeAllClick("celebrities") }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                val itemsToShow = minOf(2, celebs.size)
+                                repeat(itemsToShow) { index ->
+                                    val celebrity = celebs[index]
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .aspectRatio(2f / 3f)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .clickable { onCelebrityClick(celebrity) }
+                                            .shadow(
+                                                elevation = 4.dp,
+                                                shape = RoundedCornerShape(12.dp)
+                                            )
+                                    ) {
+                                        val profileImage = celebrity.profilePath?.let {
+                                            if (it.startsWith("/")) "https://image.tmdb.org/t/p/w500$it"
+                                            else "https://image.tmdb.org/t/p/w500/$it"
+                                        } ?: "https://via.placeholder.com/300x450?text=No+Image"
+
+                                        Image(
+                                            painter = rememberAsyncImagePainter(profileImage),
+                                            contentDescription = celebrity.name ?: "Celebrity",
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop
+                                        )
+
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(
+                                                    Brush.verticalGradient(
+                                                        colors = listOf(
+                                                            Color.Transparent,
+                                                            Color.Black.copy(alpha = 0.7f)
+                                                        ),
+                                                        startY = 200f
+                                                    )
+                                                )
+                                        )
+
+                                        Text(
+                                            text = celebrity.name ?: "Unknown",
+                                            modifier = Modifier
+                                                .align(Alignment.BottomStart)
+                                                .padding(12.dp),
+                                            style = MaterialTheme.typography.bodyLarge.copy(
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        )
+                                    }
+                                }
+
+                                if (itemsToShow < 2) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
+
+                            if (celebs.size > 2) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    val startIndex = 2
+                                    val itemsToShow = minOf(2, celebs.size - startIndex)
+                                    repeat(itemsToShow) { index ->
+                                        val celebrity = celebs[startIndex + index]
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .aspectRatio(2f / 3f)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .clickable { onCelebrityClick(celebrity) }
+                                                .shadow(
+                                                    elevation = 4.dp,
+                                                    shape = RoundedCornerShape(12.dp)
+                                                )
+                                        ) {
+                                            val profileImage = celebrity.profilePath?.let {
+                                                if (it.startsWith("/")) "https://image.tmdb.org/t/p/w500$it"
+                                                else "https://image.tmdb.org/t/p/w500/$it"
+                                            } ?: "https://via.placeholder.com/300x450?text=No+Image"
+
+                                            Image(
+                                                painter = rememberAsyncImagePainter(profileImage),
+                                                contentDescription = celebrity.name ?: "Celebrity",
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentScale = ContentScale.Crop
+                                            )
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .background(
+                                                        Brush.verticalGradient(
+                                                            colors = listOf(
+                                                                Color.Transparent,
+                                                                Color.Black.copy(alpha = 0.7f)
+                                                            ),
+                                                            startY = 200f
+                                                        )
+                                                    )
+                                            )
+
+                                            Text(
+                                                text = celebrity.name ?: "Unknown",
+                                                modifier = Modifier
+                                                    .align(Alignment.BottomStart)
+                                                    .padding(12.dp),
+                                                style = MaterialTheme.typography.bodyLarge.copy(
+                                                    color = Color.White,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            )
+                                        }
+                                    }
+
+                                    if (itemsToShow < 2) {
+                                        Spacer(modifier = Modifier.weight(1f))
+                                    }
                                 }
                             }
                         }

@@ -275,6 +275,16 @@ fun AppNavigation(
                         }
                     )
                 }
+                "celebrities"->{
+                    CelebrityListScreen(
+                        celebrities = trendingCelebrities,
+                        onCelebrityClick = {
+                            navController.navigate("celebrityDetails/${Uri.encode(gson.toJson(it))}")
+                        },
+                        onBackClick = { navController.popBackStack()
+                        }
+                    )
+                }
             }
         }
 
