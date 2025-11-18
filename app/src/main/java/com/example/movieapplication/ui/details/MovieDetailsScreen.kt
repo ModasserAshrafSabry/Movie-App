@@ -350,7 +350,7 @@ private fun DetailsBackdropSection(
 @Composable
 private fun CastRow(cast: List<CastMember>) {
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(32.dp),
         contentPadding = PaddingValues(horizontal = 8.dp)
     ) {
         items(cast) { castMember ->
