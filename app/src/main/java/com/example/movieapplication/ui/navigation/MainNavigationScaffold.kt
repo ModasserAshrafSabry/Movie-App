@@ -14,11 +14,11 @@ fun MainNavigationScaffold(
 ) {
     val navController = rememberNavController()
 
-    // نعرف الشاشة الحالية
+    // الشاشة الحالية
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 
-    // ⛔ الشاشات اللي فعلاً جوه الـ AppNavigation وعايزين نخبي فيها البوتوم بار
+    // الشاشات اللي فيها Bottom Nav
     val bottomBarRoutes = listOf(
         "home",
         "search",
@@ -34,10 +34,13 @@ fun MainNavigationScaffold(
                 BottomNavigationBar(
                     currentRoute = currentRoute,
                     onItemClick = { route ->
+
                         navController.navigate(route) {
+                            popUpTo("home") { inclusive = false }
+
                             launchSingleTop = true
+
                             restoreState = true
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
                         }
                     }
                 )
@@ -45,9 +48,9 @@ fun MainNavigationScaffold(
         }
     ) { innerPadding ->
         AppNavigation(
-             viewModel = viewModel,
+            viewModel = viewModel,
             navController = navController,
-            modifier = Modifier.padding()
+            modifier = Modifier.padding(innerPadding)
         )
     }
 }
