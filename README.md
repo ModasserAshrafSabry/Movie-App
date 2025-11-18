@@ -15,102 +15,188 @@ Built with **Kotlin** and **Jetpack Compose**.
 - Beshoy Akram
 
 ---
-
 🗂️ Work Plan
 
-Splash Screen
-Login Screen
-Sign Up Screen
-Home Screen
-Movie Details Screen
-Search & Recommendations
-Celebrity Profile Screen
-Profile Screen
-Account Settings
+This app consists of the following screens:
+
 Splash Screen
 
-A minimal and visually appealing introduction screen that creates a welcoming startup experience.
+Login Screen
+
+Sign Up Screen
+
+Home Screen
+
+Movie Details Screen
+
+Search & Recommendations
+
+Genre Movies Screen
+
+Celebrity Profile Screen
+
+Profile Screen
+
+Account Settings
+
+📱 Screens Overview
+🚀 Splash Screen
+
+A simple and visually appealing introduction screen that provides a smooth and welcoming startup experience.
 Includes:
-App logo displayed at the center
+
+Centered app logo
+
 A button to proceed to the next page
-Dark-themed background to match the app’s overall identity
+
+Dark-themed background matching the app identity
 
 🔐 Login Screen
+
 Allows users to securely access their accounts.
 Includes:
+
 Email and Password input fields
-“Forgot Password?” link
+
+Forgot Password? link
+
 Primary Login button
-A prompt: “Don’t have an account? Sign up” (linked to signup page)
+
+Prompt: “Don’t have an account? Sign up” (linked to Sign Up screen)
 
 🆕 Sign Up Screen
-Enables users to create new accounts and access personalized features.
+
+Enables users to create an account and access personalized features.
 Includes:
+
 Fields: Name, Email, Password, Confirm Password
+
 Optional password strength indicator
+
 Create Account button
-Prompt: “Already have an account? Login” (linked to login page)
+
+Prompt: “Already have an account? Login” (linked to Login screen)
 
 🏠 Home Screen
+
 Displays trending and personalized content for quick discovery.
 Includes:
+
 Full-width advertisement banner with trailer thumbnail and poster overlay
-Trending Movies carousel:
+
+Trending Movies Carousel:
+
 Movie poster
+
 Watchlist icon
+
 Title and rating
+
 Tap → Movie Details Screen
-Trending Celebrities carousel:
-Celebrity image, name, and role (Actor/Director)
+
+Trending Celebrities Carousel:
+
+Celebrity image
+
+Name and role (Actor/Director)
+
 Tap → Celebrity Profile Screen
+
 Watchlist section showing up to 3 saved movies + “View All” button
-Search Option leading to the Search & Recommendations screen
+
+Search option leading to Search & Recommendations screen
 
 🎬 Movie Details Screen
+
 Displays complete information about the selected movie.
 Includes:
+
 Movie poster and trailer thumbnail
+
 Cast list
-Movie rating and “Add to Watchlist” button
-Genre, release date, runtime, and short description
+
+Rating + Add to Watchlist button
+
+Genre, release date, runtime
+
+Short description
 
 🔎 Search & Recommendations
+
 Allows users to explore content and receive smart suggestions.
 Includes:
+
 Search bar: “Search for movies, actors, or genres…”
+
 Recommended Genres (clickable chips/cards)
+
 Recommended Celebrities carousel
-Navigation based on selection:
+Navigation:
+
 Movie → Movie Details Screen
+
 Celebrity → Celebrity Profile Screen
-Genre → Genre Movies Screen (with option to add genre to favorites in Profile)
+
+Genre → Genre Movies Screen (with option to add genre to favorites in Profile screen)
+
+🎭 Genre Movies Screen
+
+Displays all movies that belong to a selected genre.
+Includes:
+
+List/grid of movies filtered by the chosen genre
+
+Each item shows movie poster, title, and rating
+
+Tap → Movie Details Screen
+
+Option to add the genre to user favorites (inside Profile Screen)
 
 🌟 Celebrity Profile Screen
+
 Showcases key information about a selected celebrity.
 Includes:
-Celebrity image and name
+
+Celebrity image
+
+Name
+
 Short biography
-“Add to Favorites” button (links to Profile)
+
+Add to Favorites button (linked to Profile)
+
 Additional details: birthday, place of birth
 
 👤 Profile Screen
-Central hub for managing personal info, favorite genres, and celebrities.
+
+Central hub for managing user preferences and favorite content.
 Includes:
+
 Profile image placeholder, username, and email (optional)
-Favorite Genres section (clickable cards/grid view)
+
+Favorite Genres section (clickable cards/grid)
+
 Favorite Celebrities section (horizontal scroll):
-Image, name, role
+
+Image, name, and role
+
 Tap → Celebrity Profile Screen
 
 ⚙️ Account Settings
+
 Allows users to manage their account securely.
 Includes:
+
 Editable Username field (auto-save or Save button)
+
 Password change section (current/new/confirm fields + Save)
+
 Logout button
 
 🌑 Theme
-All screens follow a Dark Theme for modern aesthetics and better viewing comfort.
+
+All screens follow a Dark Theme for modern aesthetics and better visual comfort.
+
 
 ---
 
@@ -128,24 +214,6 @@ All screens follow a Dark Theme for modern aesthetics and better viewing comfort
 
 ---
 
-📊 KPIs (Key Performance Indicators)
-
-Project Success Metrics:
-App Launch (Splash): < 2s
-Login/Signup Response: < 150ms
-Home Screen Load: < 300ms
-Search Accuracy: ≥ 90%
-Details Screen Load: < 200ms
-Profile/Account Actions: < 100ms
-Watchlist Updates: Instant (< 100ms)
-Error Rate: < 1%
-User Engagement: ≥ 3 screens/session
-UI Responsiveness: < 100ms
-
-
-
----
-
 ## 👨‍🏫 Instructor  
 **Eng. Ahmed Atef**  
 
@@ -156,5 +224,6 @@ You can find the full project files here:
 [📄 Google Drive Link](https://drive.google.com/drive/folders/1PC_bRJyynmDVNKVfSxrzAYkgg8OUTzXm?usp=drive_link)  
 
 ---
+
 
 
