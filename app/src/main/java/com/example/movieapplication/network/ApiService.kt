@@ -4,12 +4,30 @@ import com.example.movieapp.model.MovieResponse
 import com.example.movieapp.model.CelebrityResponse
 import com.example.movieapplication.model.CreditsResponse
 import com.example.movieapplication.model.MovieDetails
+import com.google.gson.annotations.SerializedName
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
 
+    data class PersonDetailsResponse(
+        val id: Int,
+        val name: String?,
+        val known_for_department: String?,
+        val profile_path: String?,
+        val birthday: String?,
+        val place_of_birth: String?,
+        val biography: String?
+    )
+
+    data class PersonImagesResponse(
+        @SerializedName("profiles") val profiles: List<PersonProfile>? = null
+    )
+
+    data class PersonProfile(
+        @SerializedName("file_path") val filePath: String? = null
+    )
     @GET("trending/movie/week")
     suspend fun getTrendingMovies(
         @Query("api_key") apiKey: String
@@ -54,5 +72,17 @@ interface ApiService {
         @Path("movie_id") movieId: Int,
         @Query("api_key") apiKey: String
     ): CreditsResponse
+
+    @GET("person/{person_id}")
+    suspend fun getPersonDetails(
+        @Path("person_id") personId: Int,
+        @Query("api_key") apiKey: String
+    ): PersonDetailsResponse
+
+    @GET("person/{person_id}/images")
+    suspend fun getPersonImages(
+        @Path("person_id") personId: Int,
+        @Query("api_key") apiKey: String
+    ): PersonImagesResponse
 
 }

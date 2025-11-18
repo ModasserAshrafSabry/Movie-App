@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import android.util.Log
 class HomeViewModel(
-    private val movieRepository: MovieRepository,
+    val movieRepository: MovieRepository,
     private val watchlistRepository: WatchlistRepository
 ) : ViewModel() {
 

@@ -1,12 +1,12 @@
 package com.example.movieapp.data
 
 import android.util.Log
+import com.example.movieapp.BuildConfig
+import com.example.movieapp.model.Celebrity
 import com.example.movieapp.model.CelebrityResponse
 import com.example.movieapp.model.MovieResponse
 import com.example.movieapp.network.ApiService
 import com.example.movieapp.network.RetrofitInstance
-import com.example.movieapp.BuildConfig
-import com.example.movieapp.model.CastMember
 import com.example.movieapplication.model.CreditsResponse
 
 class MovieRepository {
@@ -53,6 +53,48 @@ class MovieRepository {
         } catch (e: Exception) {
             Log.e("MoviesCheck", "Error fetching celebrities: ${e.message}")
             null
+        }
+    }
+
+    suspend fun getCelebrityDetails(personId: Int): Celebrity? {
+        return try {
+            Log.d("REPO_DEBUG", "🔍 REPOSITORY: Fetching details for personId: $personId")
+            val response = apiService.getPersonDetails(personId, BuildConfig.TMDB_API_KEY)
+            Log.d("REPO_DEBUG", "🔍 REPOSITORY: Raw API response received")
+            Log.d("REPO_DEBUG", "🔍 REPOSITORY - ID: ${response.id}")
+            Log.d("REPO_DEBUG", "🔍 REPOSITORY - Name: '${response.name}'")
+            Log.d("REPO_DEBUG", "🔍 REPOSITORY - Birthday: '${response.birthday}'")
+            Log.d("REPO_DEBUG", "🔍 REPOSITORY - Place of Birth: '${response.place_of_birth}'")
+            Log.d("REPO_DEBUG", "🔍 REPOSITORY - Biography: '${response.biography?.take(50)}...'")
+            Log.d("REPO_DEBUG", "🔍 REPOSITORY - Known For: '${response.known_for_department}'")
+
+            val celebrity = Celebrity(
+                id = response.id,
+                name = response.name ?: "Unknown",
+                role = response.known_for_department,
+                profilePath = response.profile_path,
+                birthday = response.birthday,
+                placeOfBirth = response.place_of_birth,
+                biography = response.biography
+            )
+            Log.d("REPO_DEBUG", "🔍 REPOSITORY: Successfully converted to Celebrity object")
+            celebrity
+        } catch (e: Exception) {
+            Log.e("REPO_DEBUG", "❌ REPOSITORY: Error fetching celebrity details - ${e.message}", e)
+            null
+        }
+    }
+
+    suspend fun getCelebrityImages(personId: Int): List<String> {
+        return try {
+            Log.d("REPO_DEBUG", "🖼️ REPOSITORY: Fetching images for personId: $personId")
+            val response = apiService.getPersonImages(personId, BuildConfig.TMDB_API_KEY)
+            val images = response.profiles?.mapNotNull { it.filePath } ?: emptyList()
+            Log.d("REPO_DEBUG", "🖼️ REPOSITORY: Found ${images.size} images")
+            images
+        } catch (e: Exception) {
+            Log.e("REPO_DEBUG", "❌ REPOSITORY: Error fetching celebrity images - ${e.message}", e)
+            emptyList()
         }
     }
 

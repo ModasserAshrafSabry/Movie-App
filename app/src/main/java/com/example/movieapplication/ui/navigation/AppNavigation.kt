@@ -1,16 +1,22 @@
 package com.example.movieapp.ui.navigation
 
 import android.net.Uri
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.movieapp.data.MovieRepository
 import com.example.movieapp.model.Movie
 import com.example.movieapp.model.Celebrity
 import com.example.movieapp.data.local.MovieEntity
@@ -61,7 +67,6 @@ fun AppNavigation(
 ) {
     val gson = Gson()
 
-    // 100% FIX — نجبر الـ State تبقى non-null مع defaultValue
     val trendingMovies: List<Movie> =
         viewModel.trendingMovies.collectAsState(initial = emptyList()).value ?: emptyList()
 
@@ -89,35 +94,28 @@ fun AppNavigation(
 
         // ---------------- HOME ----------------
         composable("home") {
-
             HomeScreen(
                 viewModel = viewModel,
-
                 onMovieClick = { movie ->
                     val encoded = Uri.encode(gson.toJson(movie))
                     navController.navigate("details/$encoded")
                 },
-
                 onCelebrityClick = { celebrity ->
-                    val encoded = Uri.encode(gson.toJson(celebrity))
-                    navController.navigate("celebrityDetails/$encoded")
+                    // URL encode the name and profilePath to handle special characters
+                    val encodedName = Uri.encode(celebrity.name)
+                    val encodedProfilePath = Uri.encode(celebrity.profilePath ?: "")
+                    navController.navigate("celebrityDetails/${celebrity.id}?name=$encodedName&profilePath=$encodedProfilePath")
                 },
-
                 onSearchClick = { navController.navigate("search") },
-
                 onViewAllClick = { navController.navigate("watchlist") },
-
-                // ***** ERROR FIXED — trendingMovies = NON NULL LIST *****
                 onSeeAllClicked = {
                     val encoded = Uri.encode(gson.toJson(trendingMovies))
                     navController.navigate("SeeAllScreen?movieList=$encoded")
                 },
-
                 onCelebSeeAllClick = {
                     val encoded = Uri.encode(gson.toJson(trendingCelebrities))
                     navController.navigate("allCelebrities?celebrityList=$encoded")
                 },
-
                 onProfileClick = { navController.navigate("profile") }
             )
         }
@@ -131,14 +129,10 @@ fun AppNavigation(
                 nullable = true
             })
         ) { backStackEntry ->
-
             val json = Uri.decode(backStackEntry.arguments?.getString("movieList") ?: "[]")
-
-            // FIX — نتأكد أنها List<Movie> وليس List<Movie>?
             val movies: List<Movie> = runCatching {
                 gson.fromJson(json, Array<Movie>::class.java)?.toList() ?: emptyList()
             }.getOrDefault(emptyList())
-
 
             SeeAllScreen(
                 movies = movies,
@@ -157,18 +151,18 @@ fun AppNavigation(
                 nullable = true
             })
         ) { backStackEntry ->
-
             val json = Uri.decode(backStackEntry.arguments?.getString("celebrityList") ?: "[]")
-
             val celebrities: List<Celebrity> = runCatching {
                 gson.fromJson(json, Array<Celebrity>::class.java)?.toList() ?: emptyList()
             }.getOrDefault(emptyList())
 
-
             CelebrityListScreen(
                 celebrities = celebrities,
                 onCelebrityClick = { celebrity ->
-                    navController.navigate("celebrityDetails/${Uri.encode(gson.toJson(celebrity))}")
+                    // URL encode the name and profilePath to handle special characters
+                    val encodedName = Uri.encode(celebrity.name)
+                    val encodedProfilePath = Uri.encode(celebrity.profilePath ?: "")
+                    navController.navigate("celebrityDetails/${celebrity.id}?name=$encodedName&profilePath=$encodedProfilePath")
                 },
                 onBackClick = { navController.popBackStack() }
             )
@@ -179,7 +173,6 @@ fun AppNavigation(
             "details/{movieJson}",
             arguments = listOf(navArgument("movieJson") { type = NavType.StringType })
         ) { backStackEntry ->
-
             val decoded = Uri.decode(backStackEntry.arguments?.getString("movieJson") ?: "")
             val movie = decodeMovieJson(decoded, gson) ?: return@composable
 
@@ -191,19 +184,18 @@ fun AppNavigation(
 
         // ---------------- SEARCH ----------------
         composable("search") {
-
             SearchScreen(
                 viewModel = viewModel,
                 onBackClick = { navController.popBackStack() },
-
                 onMovieClick = { movie ->
                     navController.navigate("details/${Uri.encode(gson.toJson(movie))}")
                 },
-
                 onCelebrityClick = { cel ->
-                    navController.navigate("celebrityDetails/${Uri.encode(gson.toJson(cel))}")
+                    // FIXED: Use 'cel' instead of 'celebrity' and URL encode parameters
+                    val encodedName = Uri.encode(cel.name)
+                    val encodedProfilePath = Uri.encode(cel.profilePath ?: "")
+                    navController.navigate("celebrityDetails/${cel.id}?name=$encodedName&profilePath=$encodedProfilePath")
                 },
-
                 onSeeAllClick = { type ->
                     if (type.startsWith("genre_")) {
                         val genreId = type.removePrefix("genre_").toInt()
@@ -217,17 +209,14 @@ fun AppNavigation(
 
         // ---------------- WATCHLIST ----------------
         composable("watchlist") {
-
             val wl = viewModel.watchlist.collectAsState(initial = emptyList()).value
 
             WatchlistScreen(
                 watchlist = wl,
                 onBackClick = { navController.popBackStack() },
-
                 onMovieClick = { entity ->
                     navController.navigate("details/${Uri.encode(gson.toJson(entity))}")
                 },
-
                 onRemoveClick = { entity ->
                     val movie = Movie(
                         id = entity.id,
@@ -251,12 +240,10 @@ fun AppNavigation(
                 defaultValue = "movies"
             })
         ) { backStackEntry ->
-
             val contentType = backStackEntry.arguments?.getString("contentType") ?: "movies"
             val searchVM: SearchViewModel = viewModel()
 
             when (contentType) {
-
                 "movies" -> {
                     MovieGridScreen(
                         genreId = 0,
@@ -266,7 +253,6 @@ fun AppNavigation(
                         }
                     )
                 }
-
                 "genres" -> {
                     GenresScreen(
                         genres = genreList,
@@ -275,14 +261,16 @@ fun AppNavigation(
                         }
                     )
                 }
-                "celebrities"->{
+                "celebrities" -> {
                     CelebrityListScreen(
                         celebrities = trendingCelebrities,
-                        onCelebrityClick = {
-                            navController.navigate("celebrityDetails/${Uri.encode(gson.toJson(it))}")
+                        onCelebrityClick = { celebrity ->
+                            // URL encode the name and profilePath to handle special characters
+                            val encodedName = Uri.encode(celebrity.name)
+                            val encodedProfilePath = Uri.encode(celebrity.profilePath ?: "")
+                            navController.navigate("celebrityDetails/${celebrity.id}?name=$encodedName&profilePath=$encodedProfilePath")
                         },
-                        onBackClick = { navController.popBackStack()
-                        }
+                        onBackClick = { navController.popBackStack() }
                     )
                 }
             }
@@ -293,7 +281,6 @@ fun AppNavigation(
             "moviesByGenre/{genreId}",
             arguments = listOf(navArgument("genreId") { type = NavType.IntType })
         ) { backStackEntry ->
-
             val genreId = backStackEntry.arguments?.getInt("genreId") ?: 0
             val searchVM: SearchViewModel = viewModel()
 
@@ -308,17 +295,46 @@ fun AppNavigation(
 
         // ---------------- CELEBRITY DETAILS ----------------
         composable(
-            "celebrityDetails/{celebrityJson}",
-            arguments = listOf(navArgument("celebrityJson") { type = NavType.StringType })
+            "celebrityDetails/{celebrityId}?name={name}&profilePath={profilePath}",
+            arguments = listOf(
+                navArgument("celebrityId") { type = NavType.IntType },
+                navArgument("name") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("profilePath") {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
         ) { backStackEntry ->
+            val celebrityId = backStackEntry.arguments?.getInt("celebrityId") ?: 0
+            val name = Uri.decode(backStackEntry.arguments?.getString("name") ?: "Loading...")
+            val profilePath = backStackEntry.arguments?.getString("profilePath")?.let {
+                if (it.isNotBlank()) Uri.decode(it) else null
+            }
 
-            val decoded = Uri.decode(backStackEntry.arguments?.getString("celebrityJson") ?: "")
-            val celebrity = runCatching {
-                gson.fromJson(decoded, Celebrity::class.java)
-            }.getOrNull() ?: return@composable
+            println("🎯 NAVIGATION: Creating celebrity with ID: $celebrityId, Name: '$name', ProfilePath: '$profilePath'")
+
+            if (celebrityId == 0) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Failed to load celebrity", color = Color.White)
+                }
+                return@composable
+            }
+
+            val repository = viewModel.movieRepository
+
+            // Create basic celebrity with ID, name, and profile path
+            val basicCelebrity = Celebrity(
+                id = celebrityId,
+                name = name,
+                profilePath = profilePath
+            )
 
             CelebrityDetailsScreen(
-                celebrity = celebrity,
+                basicCelebrity = basicCelebrity,
+                repository = repository,
                 onBackClick = { navController.popBackStack() }
             )
         }
