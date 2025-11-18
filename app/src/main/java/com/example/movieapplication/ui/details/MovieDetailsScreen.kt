@@ -26,19 +26,19 @@ import com.example.movieapp.data.local.MovieEntity
 import com.example.movieapp.model.CastMember
 import com.example.movieapp.model.Movie
 import com.example.movieapplication.model.CrewMember
+import com.example.movieapplication.model.MovieDetails
 import kotlinx.coroutines.launch
-import kotlin.collections.isNotEmpty
 
 @Composable
 fun MovieDetailsScreen(
-    movie: Any,                // 🔹 بيقبل Movie أو MovieEntity
+    movie: Any,                // 🔹 accepts Movie or MovieEntity
     onBackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val db = remember { AppDatabase.getDatabase(context) }
 
-    // 🔍 استخراج البيانات حسب النوع (Movie / MovieEntity)
+    // 🔍 Extract data depending on type
     val title = when (movie) {
         is Movie -> movie.title ?: "Unknown Title"
         is MovieEntity -> movie.title
@@ -65,14 +65,26 @@ fun MovieDetailsScreen(
         else -> 0
     }
 
+    // 🌟 States
     var addedToWatchlist by remember { mutableStateOf(movie is MovieEntity) }
     var showMessage by remember { mutableStateOf(false) }
+    var movieDetails by remember { mutableStateOf<MovieDetails?>(null) }
 
-    // ✅ تحقق لو الفيلم بالفعل مضاف في الـ Watchlist
-    LaunchedEffect(Unit) {
+    // ✅ Load movie details when screen opens
+    LaunchedEffect(id) {
+        if (movie is Movie) {
+            try {
+                val repo = MovieRepository()
+                movieDetails = repo.getMovieDetails(movie.id)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
         val exists = db.watchlistDao().isMovieInWatchlist(id)
         addedToWatchlist = exists
     }
+
+    // 🧭 Scrollable content
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
@@ -81,12 +93,12 @@ fun MovieDetailsScreen(
             .padding(16.dp)
             .verticalScroll(scrollState)
     ) {
-        // 🔙 زر الرجوع
+        // 🔙 Back button
         TextButton(onClick = onBackClick) {
             Text("← Back", color = Color.White, fontSize = 16.sp)
         }
 
-        // 🎞️ صورة الفيلم
+        // 🎞️ Movie poster
         Image(
             painter = rememberAsyncImagePainter(
                 model = posterPath?.let {
@@ -103,10 +115,27 @@ fun MovieDetailsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 🎬 عنوان الفيلم
+        // 🎬 Movie title
         Text(text = title, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
-        // ⭐ التقييم
+        // 🎭 Genres + Runtime
+        movieDetails?.let { details ->
+            val genresText = details.genres?.take(3)?.joinToString(" • ") { it.name } ?: ""
+            val runtimeText = details.runtime?.let { "${it / 60}h ${it % 60}m" } ?: ""
+
+            if (genresText.isNotEmpty() || runtimeText.isNotEmpty()) {
+                Text(
+                    text = listOf(genresText, runtimeText)
+                        .filter { it.isNotEmpty() }
+                        .joinToString(" • "),
+                    color = Color.LightGray,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 6.dp)
+                )
+            }
+        }
+
+        // ⭐ Rating
         voteAverage?.let {
             Text(
                 text = "⭐ $it/10",
@@ -118,7 +147,7 @@ fun MovieDetailsScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 🧾 وصف الفيلم
+        // 🧾 Overview
         Text(
             text = overview ?: "No overview available.",
             color = Color.White,
@@ -127,29 +156,25 @@ fun MovieDetailsScreen(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
-// بعد Spacer(modifier = Modifier.height(24.dp))
-        Spacer(modifier = Modifier.height(24.dp))
 
-// 🧑‍🎤 Cast & Crew
+        // 🎭 Cast & Crew
         val castList = remember { mutableStateOf<List<CastMember>>(emptyList()) }
         val crewList = remember { mutableStateOf<List<CrewMember>>(emptyList()) }
 
         LaunchedEffect(id) {
-            // لو movie من نوع Movie، هنجلب الـ credits من الريبو أو API
             if (movie is Movie) {
                 try {
-                    val repo = MovieRepository()  // أو inject لو عندك DI
-                    val credits = repo.getMovieCredits(movie.id)  // دالة جديدة في الريبو لازم تعملها
+                    val repo = MovieRepository()
+                    val credits = repo.getMovieCredits(movie.id)
                     castList.value = credits.cast
                     crewList.value = credits.crew
                 } catch (e: Exception) {
-                    // فشل في جلب الـ credits
+                    e.printStackTrace()
                 }
             }
         }
 
-// 🎭 Cast
-        // 🎭 Cast Section - LazyRow
+        // 🎭 Cast Section
         if (castList.value.isNotEmpty()) {
             Text(
                 text = "Cast",
@@ -203,8 +228,8 @@ fun MovieDetailsScreen(
             }
         }
 
-// 🎬 Crew
-        if (!crewList.value.isNullOrEmpty()) {
+        // 🎬 Crew Section
+        if (crewList.value.isNotEmpty()) {
             Text(
                 text = "Crew",
                 color = Color.White,
@@ -225,6 +250,7 @@ fun MovieDetailsScreen(
             }
         }
 
+        // ➕ Add to Watchlist Button
         Button(
             onClick = {
                 scope.launch {
@@ -246,10 +272,10 @@ fun MovieDetailsScreen(
                 color = Color.White
             )
         }
+
         Spacer(modifier = Modifier.height(120.dp))
 
-
-        // ✅ رسالة تأكيد مؤقتة
+        // ✅ Snackbar message
         if (showMessage) {
             Snackbar(
                 modifier = Modifier
