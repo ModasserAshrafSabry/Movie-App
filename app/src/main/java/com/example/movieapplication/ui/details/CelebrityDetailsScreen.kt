@@ -25,6 +25,10 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.movieapp.data.MovieRepository
 import com.example.movieapp.model.Celebrity
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+
+val db = Firebase.firestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +42,7 @@ fun CelebrityDetailsScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var retryTrigger by remember { mutableStateOf(0) }
 
-    // Main data fetching effect
+
     LaunchedEffect(basicCelebrity.id, retryTrigger) {
         isLoading = true
         errorMessage = null
@@ -131,7 +135,6 @@ fun CelebrityDetailsScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp)
                 ) {
-                    // Header Section
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Start,

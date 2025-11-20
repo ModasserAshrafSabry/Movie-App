@@ -127,11 +127,11 @@ class AccountSettingsViewModel : ViewModel() {
                     return@launch
                 }
 
-                // Re-authenticate user before changing password
+
                 val credential = EmailAuthProvider.getCredential(userEmail, state.currentPassword)
                 user.reauthenticate(credential).await()
 
-                // Change password
+
                 user.updatePassword(state.newPassword).await()
 
                 _settingsState.value = state.copy(

@@ -1,9 +1,12 @@
 package com.example.movieapp.ui.profile
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,13 +19,13 @@ class ProfileViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
     private val _profileState = MutableStateFlow(ProfileState())
-    val profileState: StateFlow<ProfileState> = _profileState.asStateFlow()
-
+    val profileState: StateFlow<ProfileState> = _profileState
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     init {
         loadUserProfile()
+        observeFavoriteGenres()
     }
 
     fun loadUserProfile() {
@@ -31,16 +34,16 @@ class ProfileViewModel : ViewModel() {
             try {
                 val currentUser = auth.currentUser
                 if (currentUser != null) {
-                    // Get user data from Firestore
                     val userDoc = db.collection("users").document(currentUser.uid).get().await()
-
                     if (userDoc.exists()) {
                         val userData = userDoc.data
                         _profileState.value = ProfileState(
-                            username = userData?.get("username") as? String ?: currentUser.displayName ?: "User",
+                            username = userData?.get("username") as? String
+                                ?: currentUser.displayName ?: "User",
                             email = currentUser.email ?: "",
                             profileImageUrl = userData?.get("profileImageUrl") as? String ?: "",
-                            favoriteGenres = (userData?.get("favoriteGenres") as? List<String>) ?: emptyList(),
+                            favoriteGenres = (userData?.get("favoriteGenres") as? List<String>)
+                                ?: emptyList(),
                             favoriteCelebrities = (userData?.get("favoriteCelebrities") as? List<Map<String, String>>)?.map {
                                 FavoriteCelebrity(
                                     id = it["id"] ?: "",
@@ -51,13 +54,11 @@ class ProfileViewModel : ViewModel() {
                             } ?: emptyList()
                         )
                     } else {
-                        // Create new user document if it doesn't exist
                         createUserDocument(currentUser.uid)
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                // If Firebase fails, use mock data
                 _profileState.value = ProfileState(
                     username = "Movie Lover",
                     email = "user@example.com",
@@ -82,9 +83,7 @@ class ProfileViewModel : ViewModel() {
             "favoriteCelebrities" to emptyList<Map<String, String>>(),
             "createdAt" to com.google.firebase.Timestamp.now()
         )
-
         db.collection("users").document(userId).set(userData).await()
-
         _profileState.value = ProfileState(
             username = currentUser?.displayName ?: "User",
             email = currentUser?.email ?: "",
@@ -98,10 +97,7 @@ class ProfileViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val userId = auth.currentUser?.uid ?: return@launch
-                db.collection("users").document(userId)
-                    .update("username", newUsername)
-                    .await()
-
+                db.collection("users").document(userId).update("username", newUsername).await()
                 _profileState.value = _profileState.value.copy(username = newUsername)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -109,38 +105,74 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
-    fun addFavoriteGenre(genre: String) {
-        viewModelScope.launch {
-            try {
-                val userId = auth.currentUser?.uid ?: return@launch
-                val currentGenres = _profileState.value.favoriteGenres.toMutableList()
-
-                if (!currentGenres.contains(genre)) {
-                    currentGenres.add(genre)
-                    db.collection("users").document(userId)
-                        .update("favoriteGenres", currentGenres)
-                        .await()
-
-                    _profileState.value = _profileState.value.copy(favoriteGenres = currentGenres)
+    fun observeFavoriteGenres() {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("users").document(userId)
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null && snapshot.exists()) {
+                    val genres = (snapshot.get("favoriteGenres") as? List<String>) ?: emptyList()
+                    _profileState.value = _profileState.value.copy(favoriteGenres = genres)
                 }
+            }
+    }
+
+
+
+    fun saveFavoriteGenre(genre: String) {
+        viewModelScope.launch {
+            val userId = auth.currentUser?.uid ?: return@launch
+            try {
+                // Ensure document exists and merge
+                db.collection("users").document(userId)
+                    .set(mapOf("favoriteGenres" to FieldValue.arrayUnion(genre)), SetOptions.merge())
+                    .await()
+
+                // Update local state immediately
+                val updatedList = _profileState.value.favoriteGenres.toMutableList()
+                if (!updatedList.contains(genre)) updatedList.add(genre)
+                _profileState.value = _profileState.value.copy(favoriteGenres = updatedList)
+
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("ProfileVM", "Error saving genre: ${e.message}")
             }
         }
     }
+
+    fun removeFavoriteGenre(genre: String) {
+        viewModelScope.launch {
+            val userId = auth.currentUser?.uid ?: return@launch
+            try {
+                db.collection("users").document(userId)
+                    .update("favoriteGenres", FieldValue.arrayRemove(genre))
+                    .await()
+
+                val updatedList = _profileState.value.favoriteGenres.toMutableList()
+                updatedList.remove(genre)
+                _profileState.value = _profileState.value.copy(favoriteGenres = updatedList)
+
+            } catch (e: Exception) {
+                Log.e("ProfileVM", "Error removing genre: ${e.message}")
+            }
+        }
+    }
+
+
+
+
 }
 
-data class ProfileState(
-    val username: String = "",
-    val email: String = "",
-    val profileImageUrl: String = "",
-    val favoriteGenres: List<String> = emptyList(),
-    val favoriteCelebrities: List<FavoriteCelebrity> = emptyList()
-)
 
-data class FavoriteCelebrity(
-    val id: String,
-    val name: String,
-    val role: String,
-    val imageUrl: String = ""
-)
+    data class ProfileState(
+        val username: String = "",
+        val email: String = "",
+        val profileImageUrl: String = "",
+        val favoriteGenres: List<String> = emptyList(),
+        val favoriteCelebrities: List<FavoriteCelebrity> = emptyList()
+    )
+
+    data class FavoriteCelebrity(
+        val id: String,
+        val name: String,
+        val role: String,
+        val imageUrl: String = ""
+    )

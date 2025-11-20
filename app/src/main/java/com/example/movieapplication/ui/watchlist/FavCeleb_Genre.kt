@@ -2,14 +2,14 @@ package com.example.movieapplication.ui.watchlist
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -17,67 +17,43 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.movieapp.R
+import androidx.lifecycle.ViewModelProvider
+import com.example.movieapp.ui.profile.ProfileViewModel
 import com.example.movieapp.ui.theme.MovieAppTheme
-import com.example.movieapplication.ui.viewmodel.SharedProfileViewModel
-import androidx.navigation.NavController
 import com.example.movieapplication.ui.Login.LoginActivity
 
-// ---------------------- MODELS ----------------------
-data class CelebModel(
-    val id: String = "",
-    val name: String,
-    val imageRes: Int,
-    val role: String
-)
+data class GenreModel(val id: Int, val name: String)
 
-data class GenreModel(
-    val id: Int,
-    val name: String
-)
-
-// ---------------------- ACTIVITY ----------------------
 class FavCeleb_Genre : ComponentActivity() {
+    private lateinit var profileViewModel: ProfileViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val mockCelebs = listOf(
-            CelebModel("1", "Tom Cruise", R.drawable.shutter, "Actor"),
-            CelebModel("2", "Scarlett Johansson", R.drawable.oppenheimer, "Actress"),
-            CelebModel("3", "Dwayne Johnson", R.drawable.wolf, "Actor")
-        )
+        profileViewModel = ViewModelProvider(this)[ProfileViewModel::class.java]
 
         val genreList = listOf(
-            GenreModel(28, "Action"),
-            GenreModel(12, "Adventure"),
-            GenreModel(16, "Animation"),
-            GenreModel(35, "Comedy"),
-            GenreModel(80, "Crime"),
-            GenreModel(18, "Drama"),
-            GenreModel(27, "Horror"),
-            GenreModel(10749, "Romance"),
-            GenreModel(53, "Thriller"),
-            GenreModel(37, "Western")
+            GenreModel(28, "Action"), GenreModel(12, "Adventure"),
+            GenreModel(16, "Animation"), GenreModel(35, "Comedy"),
+            GenreModel(80, "Crime"), GenreModel(18, "Drama"),
+            GenreModel(27, "Horror"), GenreModel(10749, "Romance"),
+            GenreModel(53, "Thriller"), GenreModel(37, "Western")
         )
 
         setContent {
             MovieAppTheme {
-                val sharedViewModel: SharedProfileViewModel = viewModel()
-
-                CelebrityGenreScreen(
-                    celebrities = mockCelebs,
+                Log.d("FavCeleb_Genre", "Setting content for GenreSelectionScreen")
+                GenreSelectionScreen(
+                    viewModel = profileViewModel,
                     genres = genreList,
-                    sharedViewModel = sharedViewModel,
                     onDoneClick = {
-                       startActivity(Intent(this, LoginActivity::class.java))
+                        Log.d("FavCeleb_Genre", "Done clicked - Starting LoginActivity")
+                        startActivity(Intent(this, LoginActivity::class.java))
                         finish()
                     }
                 )
@@ -86,154 +62,114 @@ class FavCeleb_Genre : ComponentActivity() {
     }
 }
 
-// ---------------------- CELEBRITY & GENRE SCREEN ----------------------
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CelebrityGenreScreen(
-    sharedViewModel: SharedProfileViewModel,
-    celebrities: List<CelebModel>,
+fun GenreSelectionScreen(
+    viewModel: ProfileViewModel,
     genres: List<GenreModel>,
     onDoneClick: () -> Unit
 ) {
-    val favoriteCelebs by sharedViewModel.favoriteCelebs.collectAsState()
-    val favoriteGenres by sharedViewModel.favoriteGenres.collectAsState()
+    val profileState by viewModel.profileState.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
-    val isButtonEnabled = favoriteCelebs.isNotEmpty() && favoriteGenres.isNotEmpty()
+    val selectedGenres = remember { mutableStateListOf<String>() }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Choose Favourites", color = Color.White) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
-            )
-        },
-        containerColor = Color.Black
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-            item {
-                Text(
-                    text = "Celebrities",
-                    color = Color.White,
-                    fontSize = 22.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-            items(celebrities) { celeb ->
-                CelebrityItem(
-                    celeb = celeb,
-                    isSelected = favoriteCelebs.contains(celeb),
-                    onToggleSelected = { sharedViewModel.addOrRemoveCeleb(celeb) }
-                )
-                Divider(color = Color.DarkGray, thickness = 1.dp)
-            }
+    LaunchedEffect(profileState.favoriteGenres) {
+        selectedGenres.clear()
+        selectedGenres.addAll(profileState.favoriteGenres)
+    }
 
-            item {
-                Spacer(Modifier.height(24.dp))
-                Text(
-                    text = "Genres",
-                    color = Color.White,
-                    fontSize = 22.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp)
+    if (isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = Color.Red)
+        }
+    } else {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("Choose Favorite Genres", color = Color.White) },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Black)
                 )
-            }
-            items(genres) { genre ->
-                GenreItem(
-                    genre = genre,
-                    isSelected = favoriteGenres.contains(genre),
-                    onToggleSelected = { sharedViewModel.addOrRemoveGenre(genre) }
-                )
-                Divider(color = Color.DarkGray, thickness = 1.dp)
-            }
-
-            item {
-                Spacer(Modifier.height(30.dp))
-                Button(
-                    onClick = onDoneClick,
-                    enabled = isButtonEnabled,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isButtonEnabled) Color.Red else Color.Red.copy(alpha = 0.4f)
-                    )
-                ) {
-                    Text(
-                        text = "Done",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                    )
+            },
+            containerColor = Color.Black
+        ) { paddingValues ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(bottom = 100.dp)
+            ) {
+                item {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Select your favorite genres",
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text("You can change this later", color = Color.Gray, fontSize = 14.sp)
+                    }
                 }
-                Spacer(Modifier.height(40.dp))
+
+                items(genres) { genre ->
+                    val isSelected = selectedGenres.contains(genre.name)
+
+                    GenreItem(
+                        genre = genre,
+                        isSelected = isSelected,
+                        onToggleSelected = {
+                            if (isSelected) {
+                                selectedGenres.remove(genre.name)
+                                viewModel.removeFavoriteGenre(genre.name)
+                            } else {
+                                selectedGenres.add(genre.name)
+                                viewModel.saveFavoriteGenre(genre.name)
+                            }
+                        }
+                    )
+
+                    Divider(color = Color.DarkGray, thickness = 1.dp)
+                }
+
+                item {
+                    Spacer(Modifier.height(32.dp))
+                    Button(
+                        onClick = onDoneClick,
+                        enabled = selectedGenres.isNotEmpty(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red,
+                            disabledContainerColor = Color.Red.copy(alpha = 0.4f)
+                        )
+                    ) {
+                        Text(
+                            "Done",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(Modifier.height(40.dp))
+                }
             }
         }
     }
 }
 
+
 @Composable
-fun CelebrityItem(
-    celeb: CelebModel,
-    isSelected: Boolean,
-    onToggleSelected: () -> Unit
-) {
+fun GenreItem(genre: GenreModel, isSelected: Boolean, onToggleSelected: () -> Unit) {
+    Log.d("GenreItem", "Composing GenreItem → ${genre.name}, Selected: $isSelected")
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = painterResource(id = celeb.imageRes),
-            contentDescription = celeb.name,
-            modifier = Modifier
-                .size(80.dp)
-                .clip(RoundedCornerShape(10.dp)),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(Modifier.width(16.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = celeb.name,
-                fontSize = 18.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                color = Color.White
-            )
-            Text(
-                text = celeb.role,
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
-        }
-
-        IconButton(onClick = onToggleSelected) {
-            Icon(
-                imageVector = if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                contentDescription = "",
-                tint = if (isSelected) Color.Red else Color.White
-            )
-        }
-    }
-}
-
-@Composable
-fun GenreItem(
-    genre: GenreModel,
-    isSelected: Boolean,
-    onToggleSelected: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth(),
+            .height(56.dp)
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -243,11 +179,17 @@ fun GenreItem(
             modifier = Modifier.weight(1f)
         )
 
-        IconButton(onClick = onToggleSelected) {
+        IconButton(
+            onClick = {
+                Log.d("GenreItem", "Icon clicked: ${genre.name}")
+                onToggleSelected()
+            }
+        ) {
             Icon(
                 imageVector = if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                contentDescription = if (isSelected) "Remove from Favorites" else "Add to Favorites",
                 tint = if (isSelected) Color.Red else Color.White,
-                contentDescription = ""
+                modifier = Modifier.size(28.dp)
             )
         }
     }
