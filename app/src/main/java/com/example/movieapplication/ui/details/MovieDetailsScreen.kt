@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -88,13 +90,11 @@ fun MovieDetailsScreen(
             val credits = repo.getMovieCredits(id)
             castList = credits.cast
             crewList = credits.crew
-        } catch (_: Exception) {
-        }
+        } catch (_: Exception) {}
 
         try {
             addedToPlaylist = db.watchlistDao().isMovieInWatchlist(id)
-        } catch (_: Exception) {
-        }
+        } catch (_: Exception) {}
     }
 
     val scrollState = rememberScrollState()
@@ -102,16 +102,14 @@ fun MovieDetailsScreen(
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black), color = Color(0xFF080808)
+            .background(Color.Black),
+        color = Color(0xFF080808)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            // -------------------------------
-            // BACKDROP + BACK BUTTON
-            // -------------------------------
             DetailsBackdropSection(
                 details = movieDetails,
                 posterPathFallback = posterPathProp,
@@ -122,37 +120,14 @@ fun MovieDetailsScreen(
                 onBackClick = onBackClick
             )
 
-            // --------------------------------------
-//     TITLE + YEAR + RUNTIME (TOP)
-// --------------------------------------
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-
-                // Year + Runtime
-                movieDetails?.let { details ->
-                    val year = details.releaseDate?.take(4) ?: "----"
-                    val runtimeText = details.runtime?.let { formatRuntime(it) } ?: ""
-
-
-                }
-            }
-
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 10.dp)
+                modifier = Modifier.padding(top = 10.dp, start = 16.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.star_icon),
                     contentDescription = "Rating Icon",
-                    modifier = Modifier
-                        .size(18.dp)
-                        .padding(end = 6.dp)
+                    modifier = Modifier.size(18.dp).padding(end = 6.dp)
                 )
                 val displayRating = (movieDetails?.voteAverage ?: voteAverageProp)
                 displayRating?.let { r ->
@@ -170,14 +145,12 @@ fun MovieDetailsScreen(
                 text = overviewProp ?: movieDetails?.overview ?: "No overview available.",
                 color = Color.White,
                 fontSize = 16.sp,
-                lineHeight = 20.sp
+                lineHeight = 20.sp,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // -------------------------------
-            // CAST + CREW (inside same styled box)
-            // -------------------------------
             if (castList.isNotEmpty() || crewList.isNotEmpty()) {
                 Box(
                     modifier = Modifier
@@ -186,14 +159,9 @@ fun MovieDetailsScreen(
                         .padding(bottom = 12.dp)
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        // Title row with yellow bar
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(
-                                start = 16.dp,
-                                top = 16.dp,
-                                bottom = 8.dp
-                            )
+                            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
                         ) {
                             Text("|", color = Color(0xFFd8fd33), fontSize = 27.sp)
                             Text(
@@ -204,14 +172,10 @@ fun MovieDetailsScreen(
                             )
                         }
 
-                        // Cast LazyRow
                         if (castList.isNotEmpty()) {
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                contentPadding = PaddingValues(
-                                    horizontal = 16.dp,
-                                    vertical = 8.dp
-                                )
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                             ) {
                                 items(castList.take(10)) { castMember ->
                                     Column(
@@ -222,8 +186,7 @@ fun MovieDetailsScreen(
                                             painter = rememberAsyncImagePainter(
                                                 model = castMember.profile_path?.let {
                                                     "https://image.tmdb.org/t/p/w200$it"
-                                                }
-                                                    ?: "https://via.placeholder.com/100x150?text=No+Image"
+                                                } ?: "https://via.placeholder.com/100x150?text=No+Image"
                                             ),
                                             contentDescription = castMember.name,
                                             modifier = Modifier
@@ -231,26 +194,21 @@ fun MovieDetailsScreen(
                                                 .clip(RoundedCornerShape(8.dp)),
                                             contentScale = ContentScale.Crop
                                         )
-
                                         Spacer(modifier = Modifier.height(6.dp))
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.width(100.dp)
-                                        ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(100.dp)) {
                                             Text(
                                                 text = castMember.name ?: "Unknown",
                                                 color = Color.White,
                                                 fontSize = 14.sp,
                                                 maxLines = 1,
-                                                textAlign = TextAlign.Center // <--- explicitly center the text
+                                                textAlign = TextAlign.Center
                                             )
-
                                             Text(
                                                 text = castMember.character ?: "",
                                                 color = Color.LightGray,
                                                 fontSize = 12.sp,
                                                 maxLines = 1,
-                                                textAlign = TextAlign.Center // <--- explicitly center the text
+                                                textAlign = TextAlign.Center
                                             )
                                         }
                                     }
@@ -260,18 +218,12 @@ fun MovieDetailsScreen(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Crew summary (director & writers)
                         val directors = crewList.filter { it.job.equals("Director", true) }
                         val writers = crewList.filter { jobIsWriter(it.job) }
                         if (directors.isNotEmpty() || writers.isNotEmpty()) {
                             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                                 if (directors.isNotEmpty()) {
-                                    Text(
-                                        text = "Director",
-                                        color = Color.White,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
+                                    Text("Director", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                                     Text(
                                         text = directors.joinToString(", ") { it.name ?: "" },
                                         color = Color.LightGray,
@@ -280,12 +232,7 @@ fun MovieDetailsScreen(
                                     )
                                 }
                                 if (writers.isNotEmpty()) {
-                                    Text(
-                                        text = "Writers",
-                                        color = Color.White,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
+                                    Text("Writers", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                                     Text(
                                         text = writers.joinToString(", ") { it.name ?: "" },
                                         color = Color.LightGray,
@@ -296,13 +243,9 @@ fun MovieDetailsScreen(
                         }
                     }
                 }
-
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // -------------------------------
-            // ADD TO PLAYLIST BUTTON
-            // -------------------------------
             Button(
                 onClick = {
                     scope.launch {
@@ -319,8 +262,7 @@ fun MovieDetailsScreen(
                                 )
                                 addedToPlaylist = true
                                 showSnackbar = true
-                            } catch (_: Exception) {
-                            }
+                            } catch (_: Exception) {}
                         }
                     }
                 },
@@ -329,6 +271,7 @@ fun MovieDetailsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
+                    .padding(horizontal = 16.dp)
             ) {
                 Text(
                     text = if (addedToPlaylist) "✔ In Playlist" else "+ Add to playlist",
@@ -358,10 +301,6 @@ fun MovieDetailsScreen(
     }
 }
 
-
-/* ---------------------------------------------------------
-                 BACKDROP SECTION
----------------------------------------------------------- */
 @Composable
 private fun DetailsBackdropSection(
     details: MovieDetails?,
@@ -377,7 +316,6 @@ private fun DetailsBackdropSection(
             .fillMaxWidth()
             .height(350.dp)
     ) {
-
         Image(
             painter = rememberAsyncImagePainter(backdropUrl),
             contentDescription = "Backdrop",
@@ -385,57 +323,43 @@ private fun DetailsBackdropSection(
             contentScale = ContentScale.Crop
         )
 
-        // Top gradient (optional)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(130.dp)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent)
-                    )
-                )
+                .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent)))
         )
 
-        // -------------------------------
         // TITLE + RELEASE DATE + RUNTIME
-        // -------------------------------
         details?.let { movie ->
             val year = movie.releaseDate?.take(4) ?: "----"
             val runtimeText = movie.runtime?.let { formatRuntime(it) } ?: ""
-
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 16.dp)
-                    .background(
-                        color = Color.Black.copy(alpha = 0.6f),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .background(Color.Black.copy(alpha = 0.6f), shape = RoundedCornerShape(12.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                // Movie Title
                 Text(
                     text = movie.title ?: "Unknown Title",
                     color = Color.White,
-                    fontSize = 18.sp, // slightly smaller
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
-
-                // Release date + runtime
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "$year • $runtimeText",
                     color = Color.LightGray,
                     fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 2.dp)
+                    textAlign = TextAlign.Center
                 )
             }
         }
 
-        // Back button
+        // BACK BUTTON
         IconButton(
             onClick = onBackClick,
             modifier = Modifier
@@ -444,15 +368,30 @@ private fun DetailsBackdropSection(
                 .size(44.dp)
                 .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
         ) {
+            Icon(Icons.Default.ChevronLeft, contentDescription = "Back", tint = Color.White, modifier = Modifier.size(26.dp))
+        }
+
+        // MORE BUTTON
+
+
+        IconButton(
+            onClick = { /* handle click */ },
+            modifier = Modifier
+                .align(Alignment.TopEnd) // <-- aligns to the top-right
+                .padding(16.dp)
+                .size(44.dp)
+                .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
+        ) {
             Icon(
-                imageVector = Icons.Default.ChevronLeft,
-                contentDescription = "Back",
+                imageVector = Icons.Default.MoreHoriz,
+                contentDescription = "More",
                 tint = Color.White,
                 modifier = Modifier.size(26.dp)
             )
         }
 
-        // Play trailer button
+
+        // PLAY TRAILER BUTTON
         IconButton(
             onClick = {
                 val query = Uri.encode("${details?.title} trailer")
@@ -464,16 +403,10 @@ private fun DetailsBackdropSection(
                 .size(64.dp)
                 .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
         ) {
-            Icon(
-                imageVector = Icons.Default.PlayArrow,
-                contentDescription = "Play Trailer",
-                tint = Color(0xFFFFD54F),
-                modifier = Modifier.size(44.dp)
-            )
+            Icon(Icons.Default.PlayArrow, contentDescription = "Play Trailer", tint = Color(0xFFFFD54F), modifier = Modifier.size(44.dp))
         }
     }
 
-    // Poster image
     val posterUrl = details?.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" }
         ?: posterPathFallback?.let { "https://image.tmdb.org/t/p/w500$it" }
         ?: "https://via.placeholder.com/150x225?text=No+Poster"
@@ -490,10 +423,6 @@ private fun DetailsBackdropSection(
     )
 }
 
-
-/* ---------------------------------------------------------
-                    UTILITIES
----------------------------------------------------------- */
 private fun jobIsWriter(job: String?): Boolean {
     if (job == null) return false
     val j = job.lowercase()
