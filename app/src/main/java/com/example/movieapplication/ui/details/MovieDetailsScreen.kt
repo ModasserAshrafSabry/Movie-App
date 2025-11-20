@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -500,61 +501,51 @@ private fun DetailsBackdropSection(
             }
         }
 
-        // BACK BUTTON
-        IconButton(
-            onClick = onBackClick,
+        // TOP BAR: Back + Share
+        Row(
             modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp)
-                .size(44.dp)
-                .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
+                .fillMaxWidth()
+                .padding(16.dp), // top + horizontal padding
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                Icons.Default.ChevronLeft,
-                contentDescription = "Back",
-                tint = Color.White,
-                modifier = Modifier.size(26.dp)
-            )
-        }
-
-        // --- MORE BUTTON + DROP DOWN MENU ---
-        var menuExpanded by remember { mutableStateOf(false) }
-        Box(modifier = Modifier.align(Alignment.TopEnd)) {
+            // BACK BUTTON
             IconButton(
-                onClick = { menuExpanded = true },
+                onClick = onBackClick,
                 modifier = Modifier
                     .size(44.dp)
                     .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
             ) {
                 Icon(
-                    imageVector = Icons.Default.MoreHoriz,
-                    contentDescription = "More",
+                    Icons.Default.ChevronLeft,
+                    contentDescription = "Back",
                     tint = Color.White,
                     modifier = Modifier.size(26.dp)
                 )
             }
 
-            DropdownMenu(
-                expanded = menuExpanded,
-                onDismissRequest = { menuExpanded = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Share Trailer", color = Color.White) },
-                    onClick = {
-                        menuExpanded = false
-                        val intent = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, "Watch the trailer: $trailerUrl")
-                        }
-                        context.startActivity(Intent.createChooser(intent, "Share via"))
+            // SHARE BUTTON
+            IconButton(
+                onClick = {
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, "Watch the trailer: $trailerUrl")
                     }
-                )
-                DropdownMenuItem(
-                    text = { Text("Report Issue", color = Color.White) },
-                    onClick = { menuExpanded = false }
+                    context.startActivity(Intent.createChooser(intent, "Share via"))
+                },
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = "Share Trailer",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
+
 
         // PLAY TRAILER BUTTON
         IconButton(
