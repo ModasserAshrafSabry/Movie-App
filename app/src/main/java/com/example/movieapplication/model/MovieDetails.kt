@@ -8,9 +8,12 @@ data class MovieDetails(
     val id: Int,
     val title: String?,
     val overview: String?,
-    @SerializedName("poster_path") val posterPath: String?,
+    @SerializedName("poster_path")
+    val posterPath: String?,
     val voteAverage: Double?,
-    @SerializedName("backdrop_path") val backdropPath: String?,
+    @SerializedName("backdrop_path")
+    val backdropPath: String?,
+    @SerializedName("release_date")
     val releaseDate: String?,
     val genres: List<Genre>?,
     val runtime: Int?,
