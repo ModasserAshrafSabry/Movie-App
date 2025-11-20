@@ -4,6 +4,7 @@ import com.example.movieapp.model.MovieResponse
 import com.example.movieapp.model.CelebrityResponse
 import com.example.movieapplication.model.CreditsResponse
 import com.example.movieapplication.model.MovieDetails
+import com.example.movieapplication.model.VideoResponse
 import com.google.gson.annotations.SerializedName
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -84,5 +85,16 @@ interface ApiService {
         @Path("person_id") personId: Int,
         @Query("api_key") apiKey: String
     ): PersonImagesResponse
+    @GET("movie/{movie_id}/videos")
+    suspend fun getMovieVideos(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String
+    ): VideoResponse
+    @GET("movie/{movie_id}")
+    suspend fun getMovieDetails(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String,
+        @Query("append_to_response") appendToResponse: String = "videos" // <-- add this
+    ): MovieDetails
 
 }

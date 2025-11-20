@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
@@ -293,44 +294,73 @@ fun MovieDetailsScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Divider(thickness = .3.dp, color = Color.Gray)
 
-                        // Crew summary
+// Crew summary
                         val directors = crewList.filter { it.job.equals("Director", true) }
-                        val writers = crewList.filter { jobIsWriter(it.job) }
+                        val writers = crewList.filter { jobIsWriter(it.job) }.take(1)
+
                         if (directors.isNotEmpty() || writers.isNotEmpty()) {
-                            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                                if (directors.isNotEmpty()) {
-                                    Text(
-                                        "Director",
-                                        color = Color.White,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    Text(
-                                        text = directors.joinToString(", ") { it.name ?: "" },
-                                        color = Color.LightGray,
-                                        fontSize = 14.sp,
-                                        modifier = Modifier.padding(bottom = 8.dp)
-                                    )
-                                }
-                                if (writers.isNotEmpty()) {
-                                    Text(
-                                        "Writers",
-                                        color = Color.White,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    Text(
-                                        text = writers.joinToString(", ") { it.name ?: "" },
-                                        color = Color.LightGray,
-                                        fontSize = 14.sp
-                                    )
+
+                            // --- DIRECTOR ROW (inside padding) ---
+                            if (directors.isNotEmpty()) {
+                                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = "Director: ",
+                                            color = Color.White,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = directors.joinToString(", ") { it.name ?: "" },
+                                            color = Color.LightGray,
+                                            fontSize = 14.sp
+                                        )
+                                    }
                                 }
                             }
+
+                            // --- FULL WIDTH DIVIDER (NOT inside padding) ---
+                            if (directors.isNotEmpty() && writers.isNotEmpty()) {
+                                Divider(thickness = .3.dp, color = Color.Gray)
+                            }
+
+                            // --- WRITER ROW (inside padding) ---
+                            if (writers.isNotEmpty()) {
+                                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = "Writer: ",
+                                            color = Color.White,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = writers.joinToString(", ") { it.name ?: "" },
+                                            color = Color.LightGray,
+                                            fontSize = 14.sp
+                                        )
+                                    }
+                                }
+                            }
+
+                            // bottom divider full width
+                            Divider(thickness = .3.dp, color = Color.Gray)
                         }
+
                     }
                 }
+
+
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
@@ -400,13 +430,23 @@ private fun DetailsBackdropSection(
     onPlayTrailer: (String) -> Unit,
     onBackClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val backdropUrl = details?.backdropPath?.let { "https://image.tmdb.org/t/p/w780$it" }
         ?: "https://via.placeholder.com/780x350?text=No+Backdrop"
+
+    // Get official trailer key from TMDb data
+    val trailerKey = details?.videos?.results
+        ?.firstOrNull { it.type == "Trailer" && it.site == "YouTube" }
+        ?.key
+
+    val trailerUrl = trailerKey?.let { "https://www.youtube.com/watch?v=$it" }
+        ?: "https://www.youtube.com/results?search_query=${Uri.encode("${details?.title} trailer")}"
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(350.dp)
+            .height(400.dp)
+            .systemBarsPadding() // handles status bar
     ) {
         // BACKDROP IMAGE
         Image(
@@ -477,30 +517,48 @@ private fun DetailsBackdropSection(
             )
         }
 
-        // MORE BUTTON
-        IconButton(
-            onClick = { /* handle click */ },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-                .size(44.dp)
-                .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
-        ) {
-            Icon(
-                imageVector = Icons.Default.MoreHoriz,
-                contentDescription = "More",
-                tint = Color.White,
-                modifier = Modifier.size(26.dp)
-            )
+        // --- MORE BUTTON + DROP DOWN MENU ---
+        var menuExpanded by remember { mutableStateOf(false) }
+        Box(modifier = Modifier.align(Alignment.TopEnd)) {
+            IconButton(
+                onClick = { menuExpanded = true },
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreHoriz,
+                    contentDescription = "More",
+                    tint = Color.White,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
+
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Share Trailer", color = Color.White) },
+                    onClick = {
+                        menuExpanded = false
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, "Watch the trailer: $trailerUrl")
+                        }
+                        context.startActivity(Intent.createChooser(intent, "Share via"))
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Report Issue", color = Color.White) },
+                    onClick = { menuExpanded = false }
+                )
+            }
         }
 
         // PLAY TRAILER BUTTON
         IconButton(
-            onClick = {
-                val query = Uri.encode("${details?.title} trailer")
-                val searchUrl = "https://www.youtube.com/results?search_query=$query"
-                onPlayTrailer(searchUrl)
-            },
+            onClick = { onPlayTrailer(trailerUrl) },
             modifier = Modifier
                 .align(Alignment.Center)
                 .size(64.dp)
@@ -515,6 +573,10 @@ private fun DetailsBackdropSection(
         }
     }
 }
+
+
+
+
 
 private fun jobIsWriter(job: String?): Boolean {
     if (job == null) return false

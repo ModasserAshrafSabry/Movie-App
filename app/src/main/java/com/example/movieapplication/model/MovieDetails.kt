@@ -18,7 +18,8 @@ data class MovieDetails(
     val genres: List<Genre>?,
     val runtime: Int?,
     val cast: List<CastMember>?,
-    val crew: List<CrewMember>?
+    val crew: List<CrewMember>?,
+    val videos: VideoResponse? = null
 
 ) : Serializable
 
@@ -46,3 +47,21 @@ data class Genre(
     val id: Int,
     val name: String
 )
+data class Video(
+    val id: String,
+    val key: String,       // YouTube video key
+    val name: String?,
+    val site: String?,     // e.g., "YouTube"
+    val type: String?      // e.g., "Trailer"
+)
+
+data class VideoResponse(
+    val results: List<Video> = emptyList()
+)
+
+data class VideoResult(
+    val key: String,
+    val site: String,
+    val type: String
+)
+

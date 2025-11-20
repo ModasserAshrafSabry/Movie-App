@@ -9,6 +9,7 @@ import com.example.movieapp.network.ApiService
 import com.example.movieapp.network.RetrofitInstance
 import com.example.movieapplication.model.CreditsResponse
 import com.example.movieapplication.model.MovieDetails
+import com.example.movieapplication.model.Video
 
 class MovieRepository {
 
@@ -110,8 +111,20 @@ class MovieRepository {
         return apiService.getMovieCredits(movieId, BuildConfig.TMDB_API_KEY)
     }
     suspend fun getMovieDetails(movieId: Int): MovieDetails {
-        return apiService.getMovieDetails(movieId, BuildConfig.TMDB_API_KEY)
+        return apiService.getMovieDetails(
+            movieId = movieId,
+            apiKey = BuildConfig.TMDB_API_KEY,
+            appendToResponse = "videos" // <- this is the key fix
+        )
     }
-
+    suspend fun getMovieVideos(movieId: Int): List<Video> {
+        return try {
+            val response = RetrofitInstance.api.getMovieVideos(movieId, BuildConfig.TMDB_API_KEY)
+            response.results
+        } catch (e: Exception) {
+            Log.e("MoviesCheck", "Error fetching movie videos: ${e.message}")
+            emptyList()
+        }
+    }
 
 }
