@@ -106,7 +106,7 @@ class SigninActivity : ComponentActivity() {
                                                     Toast.LENGTH_LONG
                                                 ).show()
                                                 auth.signOut()
-                                                val intent = Intent(this, FavCeleb_Genre::class.java)
+                                                val intent = Intent(this, LoginActivity::class.java)
                                                 startActivity(intent)
                                                 finish()
                                             } else {

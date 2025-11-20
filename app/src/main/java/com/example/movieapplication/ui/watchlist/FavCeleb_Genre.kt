@@ -22,13 +22,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
+import com.example.movieapp.MainActivity
 import com.example.movieapp.ui.profile.ProfileViewModel
 import com.example.movieapp.ui.theme.MovieAppTheme
-import com.example.movieapplication.ui.Login.LoginActivity
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 data class GenreModel(val id: Int, val name: String)
 
 class FavCeleb_Genre : ComponentActivity() {
+
     private lateinit var profileViewModel: ProfileViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,30 +42,61 @@ class FavCeleb_Genre : ComponentActivity() {
         profileViewModel = ViewModelProvider(this)[ProfileViewModel::class.java]
 
         val genreList = listOf(
-            GenreModel(28, "Action"), GenreModel(12, "Adventure"),
-            GenreModel(16, "Animation"), GenreModel(35, "Comedy"),
-            GenreModel(80, "Crime"), GenreModel(18, "Drama"),
-            GenreModel(27, "Horror"), GenreModel(10749, "Romance"),
-            GenreModel(53, "Thriller"), GenreModel(37, "Western")
+            GenreModel(28, "Action"),
+            GenreModel(12, "Adventure"),
+            GenreModel(16, "Animation"),
+            GenreModel(35, "Comedy"),
+            GenreModel(80, "Crime"),
+            GenreModel(18, "Drama"),
+            GenreModel(27, "Horror"),
+            GenreModel(10749, "Romance"),
+            GenreModel(53, "Thriller"),
+            GenreModel(37, "Western")
         )
 
         setContent {
             MovieAppTheme {
-                Log.d("FavCeleb_Genre", "Setting content for GenreSelectionScreen")
                 GenreSelectionScreen(
                     viewModel = profileViewModel,
                     genres = genreList,
                     onDoneClick = {
-                        Log.d("FavCeleb_Genre", "Done clicked - Starting LoginActivity")
-                        startActivity(Intent(this, LoginActivity::class.java))
-                        finish()
+                        markGenreSelectionCompletedAndGoToMain()
                     }
                 )
             }
         }
     }
-}
 
+    // This function sets the flag and navigates to MainActivity
+    private fun markGenreSelectionCompletedAndGoToMain() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) {
+            finish()
+            return
+        }
+
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(currentUser.uid)
+            .update("hasCompletedGenreSelection", true)
+            .addOnSuccessListener {
+                Log.d("FavCeleb_Genre", "Genre selection flag updated successfully")
+
+                val intent = Intent(this@FavCeleb_Genre, MainActivity::class.java)
+                  //  .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK) }
+                startActivity(intent)
+                finish()
+            }
+            .addOnFailureListener { e ->
+                Log.e("FavCeleb_Genre", "Failed to update flag: ${e.message}", e)
+
+                // Even if Firestore fails → don’t trap the user, just go to Main
+                val intent = Intent(this@FavCeleb_Genre, MainActivity::class.java)
+                   // .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK) }
+                startActivity(intent)
+                finish()
+            }
+    }}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenreSelectionScreen(
@@ -71,9 +106,9 @@ fun GenreSelectionScreen(
 ) {
     val profileState by viewModel.profileState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
     val selectedGenres = remember { mutableStateListOf<String>() }
 
+    // Sync selected genres with Firestore data
     LaunchedEffect(profileState.favoriteGenres) {
         selectedGenres.clear()
         selectedGenres.addAll(profileState.favoriteGenres)
@@ -114,7 +149,6 @@ fun GenreSelectionScreen(
 
                 items(genres) { genre ->
                     val isSelected = selectedGenres.contains(genre.name)
-
                     GenreItem(
                         genre = genre,
                         isSelected = isSelected,
@@ -128,7 +162,6 @@ fun GenreSelectionScreen(
                             }
                         }
                     )
-
                     Divider(color = Color.DarkGray, thickness = 1.dp)
                 }
 
@@ -160,11 +193,12 @@ fun GenreSelectionScreen(
     }
 }
 
-
 @Composable
-fun GenreItem(genre: GenreModel, isSelected: Boolean, onToggleSelected: () -> Unit) {
-    Log.d("GenreItem", "Composing GenreItem → ${genre.name}, Selected: $isSelected")
-
+fun GenreItem(
+    genre: GenreModel,
+    isSelected: Boolean,
+    onToggleSelected: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -178,13 +212,7 @@ fun GenreItem(genre: GenreModel, isSelected: Boolean, onToggleSelected: () -> Un
             fontSize = 18.sp,
             modifier = Modifier.weight(1f)
         )
-
-        IconButton(
-            onClick = {
-                Log.d("GenreItem", "Icon clicked: ${genre.name}")
-                onToggleSelected()
-            }
-        ) {
+        IconButton(onClick = onToggleSelected) {
             Icon(
                 imageVector = if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                 contentDescription = if (isSelected) "Remove from Favorites" else "Add to Favorites",

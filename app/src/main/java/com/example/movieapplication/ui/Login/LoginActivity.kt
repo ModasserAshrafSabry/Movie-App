@@ -33,9 +33,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.movieapp.MainActivity
 import com.example.movieapp.ui.theme.MovieAppTheme
-import com.example.movieapplication.ui.Login.ui.theme.MovieApplicationTheme
 import com.example.movieapplication.ui.Signin.SigninActivity
+import com.example.movieapplication.ui.watchlist.FavCeleb_Genre
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginActivity : ComponentActivity() {
 
@@ -84,8 +85,28 @@ class LoginActivity : ComponentActivity() {
                     if (user != null && user.isEmailVerified) {
                         Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
 
-                        startActivity(Intent(this, MainActivity::class.java))
-                        finish()
+                        // Check the flag from Firestore
+                        val db = FirebaseFirestore.getInstance()
+                        db.collection("users").document(user.uid)
+                            .get()
+                            .addOnSuccessListener { document ->
+                                val hasCompleted = document.getBoolean("hasCompletedGenreSelection") ?: false
+
+                                if (hasCompleted) {
+                                    val intent = Intent(this, MainActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    startActivity(intent)
+                                    finish()
+                                } else {
+                                    val intent = Intent(this, FavCeleb_Genre::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                            }
+                            .addOnFailureListener {
+                                startActivity(Intent(this, MainActivity::class.java))
+                                finish()
+                            }
                     } else {
                         Toast.makeText(this, "Please verify your email first", Toast.LENGTH_LONG).show()
                         auth.signOut()

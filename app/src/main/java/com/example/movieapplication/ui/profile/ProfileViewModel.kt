@@ -38,12 +38,10 @@ class ProfileViewModel : ViewModel() {
                     if (userDoc.exists()) {
                         val userData = userDoc.data
                         _profileState.value = ProfileState(
-                            username = userData?.get("username") as? String
-                                ?: currentUser.displayName ?: "User",
+                            username = userData?.get("username") as? String ?: currentUser.displayName ?: "User",
                             email = currentUser.email ?: "",
                             profileImageUrl = userData?.get("profileImageUrl") as? String ?: "",
-                            favoriteGenres = (userData?.get("favoriteGenres") as? List<String>)
-                                ?: emptyList(),
+                            favoriteGenres = (userData?.get("favoriteGenres") as? List<String>) ?: emptyList(),
                             favoriteCelebrities = (userData?.get("favoriteCelebrities") as? List<Map<String, String>>)?.map {
                                 FavoriteCelebrity(
                                     id = it["id"] ?: "",
@@ -51,7 +49,8 @@ class ProfileViewModel : ViewModel() {
                                     role = it["role"] ?: "",
                                     imageUrl = it["imageUrl"] ?: ""
                                 )
-                            } ?: emptyList()
+                            } ?: emptyList(),
+                            hasCompletedGenreSelection = userData?.get("hasCompletedGenreSelection") as? Boolean ?: false
                         )
                     } else {
                         createUserDocument(currentUser.uid)
@@ -81,15 +80,18 @@ class ProfileViewModel : ViewModel() {
             "email" to (currentUser?.email ?: ""),
             "favoriteGenres" to emptyList<String>(),
             "favoriteCelebrities" to emptyList<Map<String, String>>(),
+            "hasCompletedGenreSelection" to false,
             "createdAt" to com.google.firebase.Timestamp.now()
         )
         db.collection("users").document(userId).set(userData).await()
+
         _profileState.value = ProfileState(
             username = currentUser?.displayName ?: "User",
             email = currentUser?.email ?: "",
             profileImageUrl = "",
             favoriteGenres = emptyList(),
-            favoriteCelebrities = emptyList()
+            favoriteCelebrities = emptyList(),
+            hasCompletedGenreSelection = false
         )
     }
 
@@ -167,7 +169,8 @@ class ProfileViewModel : ViewModel() {
         val email: String = "",
         val profileImageUrl: String = "",
         val favoriteGenres: List<String> = emptyList(),
-        val favoriteCelebrities: List<FavoriteCelebrity> = emptyList()
+        val favoriteCelebrities: List<FavoriteCelebrity> = emptyList(),
+        var hasCompletedGenreSelection : Boolean = false
     )
 
     data class FavoriteCelebrity(
