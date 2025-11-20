@@ -29,11 +29,33 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.movieapp.MainActivity
 import com.example.movieapplication.ui.Login.LoginActivity
 import com.example.movieapplication.ui.Splash.ui.theme.MovieApplicationTheme
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
 class SplashActivity : ComponentActivity() {
+
+    private fun checkUserStatus() {
+        val auth = FirebaseAuth.getInstance()
+        val user = auth.currentUser
+
+        if (user != null) {
+            user.reload().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                } else {
+                    startActivity(Intent(this, LoginActivity::class.java))
+                    finish()
+                }
+            }
+        } else {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -47,9 +69,7 @@ class SplashActivity : ComponentActivity() {
                     IntroScreen(
                         onGetInClick = {
 
-                            val intent = Intent(this, LoginActivity::class.java)
-                            startActivity(intent)
-                            finish()
+                            checkUserStatus()
                         }
                     )
                 }
