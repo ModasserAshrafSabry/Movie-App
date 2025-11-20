@@ -44,10 +44,19 @@ class SigninActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
 
+    private fun hasUppercase(password: String): Boolean {
+        return password.any { it.isUpperCase() }
+    }
+
+    private fun hasLowercase(password: String): Boolean {
+        return password.any { it.isLowerCase() }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         auth = FirebaseAuth.getInstance()
+
 
         setContent {
             MovieAppTheme {
@@ -70,6 +79,16 @@ class SigninActivity : ComponentActivity() {
 
                             if (password != confirmPassword) {
                                 Toast.makeText(this, "Passwords do not match!", Toast.LENGTH_SHORT).show()
+                                return@SigninScreen
+                            }
+
+                            if (!hasUppercase(password)) {
+                                Toast.makeText(this, "Password must contain at least 1 uppercase letter", Toast.LENGTH_SHORT).show()
+                                return@SigninScreen
+                            }
+
+                            if (!hasLowercase(password)) {
+                                Toast.makeText(this, "Password must contain at least 1 lowercase letter", Toast.LENGTH_SHORT).show()
                                 return@SigninScreen
                             }
 
