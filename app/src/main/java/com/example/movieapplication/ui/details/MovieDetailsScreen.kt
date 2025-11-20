@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,10 +24,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.example.movieapp.R
 import com.example.movieapp.data.MovieRepository
 import com.example.movieapp.data.local.AppDatabase
 import com.example.movieapp.data.local.MovieEntity
@@ -38,14 +42,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MovieDetailsScreen(
-    movie: Any,                // accepts Movie or MovieEntity
+    movie: Any,
     onBackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val db = remember { AppDatabase.getDatabase(context) }
 
-    // Extract basic fields from passed object
     val title = when (movie) {
         is Movie -> movie.title ?: "Unknown Title"
         is MovieEntity -> movie.title
@@ -72,45 +75,25 @@ fun MovieDetailsScreen(
         else -> 0
     }
 
-    // UI state
     var movieDetails by remember { mutableStateOf<MovieDetails?>(null) }
     var castList by remember { mutableStateOf<List<CastMember>>(emptyList()) }
     var crewList by remember { mutableStateOf<List<CrewMember>>(emptyList()) }
     var addedToPlaylist by remember { mutableStateOf(movie is MovieEntity) }
     var showSnackbar by remember { mutableStateOf(false) }
 
-    // Load details & credits
     LaunchedEffect(id) {
-        if (movie is Movie) {
-            try {
-                val repo = MovieRepository()
-                // getMovieDetails should include runtime, genres, videos (if your model has it)
-                movieDetails = repo.getMovieDetails(movie.id)
-                val credits = repo.getMovieCredits(movie.id)
-                castList = credits.cast
-                crewList = credits.crew
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        } else if (movie is MovieEntity) {
-            // If we only have local entity, you might still want to fetch details from network
-            try {
-                val repo = MovieRepository()
-                movieDetails = repo.getMovieDetails(movie.id)
-                val credits = repo.getMovieCredits(movie.id)
-                castList = credits.cast
-                crewList = credits.crew
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        try {
+            val repo = MovieRepository()
+            movieDetails = repo.getMovieDetails(id)
+            val credits = repo.getMovieCredits(id)
+            castList = credits.cast
+            crewList = credits.crew
+        } catch (_: Exception) {
         }
 
-        // watchlist/playlist status from DB
         try {
-            val exists = db.watchlistDao().isMovieInWatchlist(id)
-            addedToPlaylist = exists
-        } catch (e: Exception) {
-            e.printStackTrace()
+            addedToPlaylist = db.watchlistDao().isMovieInWatchlist(id)
+        } catch (_: Exception) {
         }
     }
 
@@ -125,164 +108,271 @@ fun MovieDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(16.dp)
         ) {
-            // Back row
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                TextButton(onClick = onBackClick) {
-                    Text("← Back", color = Color.White, fontSize = 16.sp)
-                }
-            }
-
-            // Backdrop / Poster / Play button
+            // -------------------------------
+            // BACKDROP + BACK BUTTON
+            // -------------------------------
             DetailsBackdropSection(
                 details = movieDetails,
                 posterPathFallback = posterPathProp,
                 onPlayTrailer = { trailerUrl ->
-                    // open the url
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(trailerUrl))
                     context.startActivity(intent)
-                }
+                },
+                onBackClick = onBackClick
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Title
-            Text(
-                text = title,
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            // Genres + Runtime row
-            movieDetails?.let { details ->
-                val genresText = details.genres?.take(3)?.joinToString(" • ") { it.name } ?: ""
-                val runtimeText = details.runtime?.let { formatRuntime(it) } ?: ""
-                if (genresText.isNotEmpty() || runtimeText.isNotEmpty()) {
-                    Text(
-                        text = listOf(genresText, runtimeText).filter { it.isNotEmpty() }.joinToString(" • "),
-                        color = Color.LightGray,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 6.dp)
-                    )
-                }
-            }
-
-            // Rating (one decimal)
-            val displayRating = (movieDetails?.voteAverage ?: voteAverageProp)
-            displayRating?.let { r ->
-                val formatted = String.format("%.1f", r)
+            // -------------------------------
+            // TITLE
+            // -------------------------------
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(
-                    text = "⭐ $formatted/10",
-                    color = Color(0xFFFFD54F),
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(top = 6.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Overview
-            Text(
-                text = overviewProp ?: movieDetails?.overview ?: "No overview available.",
-                color = Color.White,
-                fontSize = 16.sp,
-                lineHeight = 20.sp
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Director & Writers (Option C: show Director + Writers only)
-            CrewSummarySection(crew = crewList)
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // Cast
-            if (castList.isNotEmpty()) {
-                Text(
-                    text = "Cast",
+                    text = title,
                     color = Color.White,
-                    fontSize = 20.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                CastRow(cast = castList.take(10))
-            }
 
-            Spacer(modifier = Modifier.height(20.dp))
+                movieDetails?.let { details ->
+                    val genresText = details.genres?.take(3)?.joinToString(" • ") { it.name } ?: ""
+                    val runtimeText = details.runtime?.let { formatRuntime(it) } ?: ""
+                    if (genresText.isNotEmpty() || runtimeText.isNotEmpty()) {
+                        Text(
+                            text = listOf(genresText, runtimeText)
+                                .filter { it.isNotEmpty() }
+                                .joinToString(" • "),
+                            color = Color.LightGray,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(top = 6.dp)
+                        )
+                    }
+                }
 
-            // Add to Playlist (green neon style)
-            Button(
-                onClick = {
-                    scope.launch {
-                        if (!addedToPlaylist) {
-                            val entity = MovieEntity(
-                                id = id,
-                                title = title,
-                                posterPath = posterPathProp,
-                                voteAverage = voteAverageProp,
-                                overview = overviewProp
-                            )
-                            try {
-                                db.watchlistDao().addMovie(entity)
-                                addedToPlaylist = true
-                                showSnackbar = true
-                            } catch (e: Exception) {
-                                e.printStackTrace()
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.star_icon),
+                        contentDescription = "Rating Icon",
+                        modifier = Modifier
+                            .size(18.dp)
+                            .padding(end = 6.dp)
+                    )
+                    val displayRating = (movieDetails?.voteAverage ?: voteAverageProp)
+                    displayRating?.let { r ->
+                        Text(
+                            text = String.format("%.1f/10", r),
+                            color = Color(0xFFFFD54F),
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = overviewProp ?: movieDetails?.overview ?: "No overview available.",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    lineHeight = 20.sp
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // -------------------------------
+                // CAST + CREW (inside same styled box)
+                // -------------------------------
+                if (castList.isNotEmpty() || crewList.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF1c1c1c))
+                            .padding(bottom = 12.dp)
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            // Title row with yellow bar
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(
+                                    start = 16.dp,
+                                    top = 16.dp,
+                                    bottom = 8.dp
+                                )
+                            ) {
+                                Text("|", color = Color(0xFFd8fd33), fontSize = 27.sp)
+                                Text(
+                                    text = "Cast & Crew",
+                                    fontSize = 25.sp,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(start = 6.dp)
+                                )
+                            }
+
+                            // Cast LazyRow
+                            if (castList.isNotEmpty()) {
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    contentPadding = PaddingValues(
+                                        horizontal = 16.dp,
+                                        vertical = 8.dp
+                                    )
+                                ) {
+                                    items(castList.take(10)) { castMember ->
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            modifier = Modifier.width(100.dp)
+                                        ) {
+                                            Image(
+                                                painter = rememberAsyncImagePainter(
+                                                    model = castMember.profile_path?.let {
+                                                        "https://image.tmdb.org/t/p/w200$it"
+                                                    }
+                                                        ?: "https://via.placeholder.com/100x150?text=No+Image"
+                                                ),
+                                                contentDescription = castMember.name,
+                                                modifier = Modifier
+                                                    .size(width = 100.dp, height = 150.dp)
+                                                    .clip(RoundedCornerShape(8.dp)),
+                                                contentScale = ContentScale.Crop
+                                            )
+
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Column(
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                modifier = Modifier.width(100.dp)
+                                            ) {
+                                                Text(
+                                                    text = castMember.name ?: "Unknown",
+                                                    color = Color.White,
+                                                    fontSize = 14.sp,
+                                                    maxLines = 1,
+                                                    textAlign = TextAlign.Center // <--- explicitly center the text
+                                                )
+
+                                                Text(
+                                                    text = castMember.character ?: "",
+                                                    color = Color.LightGray,
+                                                    fontSize = 12.sp,
+                                                    maxLines = 1,
+                                                    textAlign = TextAlign.Center // <--- explicitly center the text
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Crew summary (director & writers)
+                            val directors = crewList.filter { it.job.equals("Director", true) }
+                            val writers = crewList.filter { jobIsWriter(it.job) }
+                            if (directors.isNotEmpty() || writers.isNotEmpty()) {
+                                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                    if (directors.isNotEmpty()) {
+                                        Text(
+                                            text = "Director",
+                                            color = Color.White,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = directors.joinToString(", ") { it.name ?: "" },
+                                            color = Color.LightGray,
+                                            fontSize = 14.sp,
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+                                    }
+                                    if (writers.isNotEmpty()) {
+                                        Text(
+                                            text = "Writers",
+                                            color = Color.White,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = writers.joinToString(", ") { it.name ?: "" },
+                                            color = Color.LightGray,
+                                            fontSize = 14.sp
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFCCFF00) // neon green-ish; tweak as needed
-                ),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-            ) {
-                Text(
-                    text = if (addedToPlaylist) "✔ In Playlist" else "+ Add to playlist",
-                    color = Color.Black,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
 
-            // Snackbar-like message
-            if (showSnackbar) {
-                Snackbar(
+                // -------------------------------
+                // ADD TO PLAYLIST BUTTON
+                // -------------------------------
+                Button(
+                    onClick = {
+                        scope.launch {
+                            if (!addedToPlaylist) {
+                                try {
+                                    db.watchlistDao().addMovie(
+                                        MovieEntity(
+                                            id = id,
+                                            title = title,
+                                            posterPath = posterPathProp,
+                                            voteAverage = voteAverageProp,
+                                            overview = overviewProp
+                                        )
+                                    )
+                                    addedToPlaylist = true
+                                    showSnackbar = true
+                                } catch (_: Exception) {
+                                }
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFCCFF00)),
+                    shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(8.dp),
-                    containerColor = Color.DarkGray
+                        .fillMaxWidth()
+                        .height(52.dp)
                 ) {
-                    Text("Added to playlist", color = Color.White)
+                    Text(
+                        text = if (addedToPlaylist) "✔ In Playlist" else "+ Add to playlist",
+                        color = Color.Black,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
-                LaunchedEffect(Unit) {
-                    kotlinx.coroutines.delay(1800)
-                    showSnackbar = false
-                }
-            }
 
-            Spacer(modifier = Modifier.height(80.dp))
+                if (showSnackbar) {
+                    Snackbar(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(8.dp),
+                        containerColor = Color.DarkGray
+                    ) {
+                        Text("Added to playlist", color = Color.White)
+                    }
+                    LaunchedEffect(Unit) {
+                        kotlinx.coroutines.delay(1800)
+                        showSnackbar = false
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(80.dp))
+            }
         }
     }
 }
 
-/* ------------------ Helpers & Small Composables ------------------ */
-
+/* ---------------------------------------------------------
+                 BACKDROP SECTION
+---------------------------------------------------------- */
 @Composable
 private fun DetailsBackdropSection(
     details: MovieDetails?,
     posterPathFallback: String?,
-    onPlayTrailer: (String) -> Unit
+    onPlayTrailer: (String) -> Unit,
+    onBackClick: () -> Unit
 ) {
     val backdropUrl = details?.backdropPath?.let { "https://image.tmdb.org/t/p/w780$it" }
         ?: "https://via.placeholder.com/780x350?text=No+Backdrop"
@@ -291,8 +381,8 @@ private fun DetailsBackdropSection(
         modifier = Modifier
             .fillMaxWidth()
             .height(350.dp)
-            .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
     ) {
+
         Image(
             painter = rememberAsyncImagePainter(backdropUrl),
             contentDescription = "Backdrop",
@@ -300,16 +390,33 @@ private fun DetailsBackdropSection(
             contentScale = ContentScale.Crop
         )
 
-        // Gradient
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .height(130.dp)
                 .background(
-                    Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f)))
+                    Brush.verticalGradient(
+                        listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent)
+                    )
                 )
         )
 
-        // Play / Trailer button (center)
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp)
+                .size(44.dp)
+                .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ChevronLeft,
+                contentDescription = "Back",
+                tint = Color.White,
+                modifier = Modifier.size(26.dp)
+            )
+        }
+
         IconButton(
             onClick = {
                 val query = Uri.encode("${details?.title} trailer")
@@ -319,122 +426,40 @@ private fun DetailsBackdropSection(
             modifier = Modifier
                 .align(Alignment.Center)
                 .size(64.dp)
-                .background(Color.White.copy(alpha = 0.18f), shape = CircleShape)
+                .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
         ) {
             Icon(
                 imageVector = Icons.Default.PlayArrow,
                 contentDescription = "Play Trailer",
-                tint = Color.White,
+                tint = Color(0xFFFFD54F),
                 modifier = Modifier.size(44.dp)
             )
         }
-
-        // Poster overlapping bottom-left
-        val posterUrl = details?.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" }
-            ?: posterPathFallback?.let { "https://image.tmdb.org/t/p/w500$it" }
-            ?: "https://via.placeholder.com/150x225?text=No+Poster"
-
-        Image(
-            painter = rememberAsyncImagePainter(posterUrl),
-            contentDescription = details?.title ?: "Poster",
-            modifier = Modifier
-                .offset(x = 16.dp, y = 200.dp)
-                .size(width = 120.dp, height = 180.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop
-        )
     }
+
+    val posterUrl = details?.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" }
+        ?: posterPathFallback?.let { "https://image.tmdb.org/t/p/w500$it" }
+        ?: "https://via.placeholder.com/150x225?text=No+Poster"
+
+    Image(
+        painter = rememberAsyncImagePainter(posterUrl),
+        contentDescription = details?.title ?: "Poster",
+        modifier = Modifier
+            .offset(x = 16.dp, y = (-80).dp)
+            .size(width = 140.dp, height = 210.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .border(1.dp, Color.Gray, RoundedCornerShape(10.dp)),
+        contentScale = ContentScale.Crop
+    )
 }
 
-@Composable
-private fun CastRow(cast: List<CastMember>) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(32.dp),
-        contentPadding = PaddingValues(horizontal = 8.dp)
-    ) {
-        items(cast) { castMember ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.width(100.dp)
-            ) {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        model = castMember.profile_path?.let {
-                            "https://image.tmdb.org/t/p/w200$it"
-                        } ?: "https://via.placeholder.com/100x150?text=No+Image"
-                    ),
-                    contentDescription = castMember.name,
-                    modifier = Modifier
-                        .size(width = 100.dp, height = 150.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Text(
-                    text = castMember.name ?: "Unknown",
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    maxLines = 1
-                )
-
-                Text(
-                    text = castMember.character ?: "",
-                    color = Color.LightGray,
-                    fontSize = 12.sp,
-                    maxLines = 1
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CrewSummarySection(crew: List<CrewMember>) {
-    // Director(s)
-    val directors = crew.filter { it.job.equals("Director", true) }
-    val writers = crew.filter { jobIsWriter(it.job) }
-
-    if (directors.isNotEmpty() || writers.isNotEmpty()) {
-        Column {
-            if (directors.isNotEmpty()) {
-                Text(
-                    text = "Director",
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = directors.joinToString(", ") { it.name ?: "" },
-                    color = Color.LightGray,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-
-            if (writers.isNotEmpty()) {
-                Text(
-                    text = "Writers",
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = writers.joinToString(", ") { it.name ?: "" },
-                    color = Color.LightGray,
-                    fontSize = 14.sp
-                )
-            }
-        }
-    }
-}
-
+/* ---------------------------------------------------------
+                    UTILITIES
+---------------------------------------------------------- */
 private fun jobIsWriter(job: String?): Boolean {
     if (job == null) return false
     val j = job.lowercase()
-    return j.contains("writer") || j.contains("screenplay") || j.contains("story") || j.contains("author")
+    return j.contains("writer") || j.contains("screenplay") || j.contains("story")
 }
 
 private fun formatRuntime(totalMinutes: Int): String {
