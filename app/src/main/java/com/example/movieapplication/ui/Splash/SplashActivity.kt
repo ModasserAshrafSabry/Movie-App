@@ -23,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -79,7 +80,7 @@ class SplashActivity : ComponentActivity() {
 }
 
 @Composable
-fun IntroScreen(onGetInClick: () -> Unit, modifier: Modifier = Modifier) {
+fun IntroScreen(onGetInClick: () -> Unit, testMode: Boolean = true, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -92,20 +93,24 @@ fun IntroScreen(onGetInClick: () -> Unit, modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            HeaderSection(onGetInClick)
+            HeaderSection(onGetInClick = onGetInClick, testMode = testMode)
         }
     }
 }
 
 @Composable
-fun HeaderSection(onGetInClick: () -> Unit) {
-    var visible by remember { mutableStateOf(false) }
+fun HeaderSection(onGetInClick: () -> Unit, testMode: Boolean = false) {
+    var visible by remember { mutableStateOf(testMode) }
 
     LaunchedEffect(Unit) {
-        delay(300)
-
+        if (!testMode) {
+            delay(300)
+        }
         visible = true
     }
+
+
+
 
     Box(
         modifier = Modifier
@@ -131,6 +136,7 @@ fun HeaderSection(onGetInClick: () -> Unit) {
 
                     Text(
                         text = "Welcome to",
+                        modifier = Modifier.testTag("welcome_text"),
                         style = TextStyle(
                             color = Color.White,
                             fontSize = 28.sp,
@@ -142,6 +148,7 @@ fun HeaderSection(onGetInClick: () -> Unit) {
 
                     Text(
                         text = "StreamHub",
+                        modifier = Modifier.testTag("app_name_text"),
                         style = TextStyle(
                             color = Color(0xFF92B300),
                             fontSize = 32.sp,
@@ -155,13 +162,15 @@ fun HeaderSection(onGetInClick: () -> Unit) {
 
                     Text(
                         text = "Your gateway to endless entertainment.\nStream anywhere, anytime.",
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .testTag("splash_description"),
                         style = TextStyle(
                             color = Color.LightGray,
                             fontSize = 16.sp,
                             textAlign = TextAlign.Center
                         ),
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 12.dp)
                     )
 
                     Spacer(modifier = Modifier.height(45.dp))
@@ -169,6 +178,7 @@ fun HeaderSection(onGetInClick: () -> Unit) {
                     Button(
                         onClick = onGetInClick,
                         modifier = Modifier
+                            .testTag("next_button")
                             .fillMaxWidth(0.6f)
                             .height(50.dp),
                         colors = buttonColors(
