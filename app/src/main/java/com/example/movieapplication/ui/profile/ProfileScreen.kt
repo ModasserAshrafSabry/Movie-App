@@ -17,9 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +74,7 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Profile Header
+            // Profile Header - Original layout (left aligned)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -108,7 +111,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Favorite Genres Section
+            // Favorite Genres Section - Original layout
             Column {
                 Text(
                     text = "Favorite Genres",
@@ -137,7 +140,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Favorite Celebrities Section
+            // Favorite Celebrities Section - Original layout
             Column {
                 Text(
                     text = "Favorite Celebrities",
@@ -148,49 +151,82 @@ fun ProfileScreen(
                 )
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     items(profileState.favoriteCelebrities) { celebrity ->
-                        Card(
-                            onClick = { onNavigateToCelebrity(celebrity.id) },
-                            modifier = Modifier.width(120.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(64.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.Gray),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Person,
-                                        contentDescription = "Celebrity Placeholder",
-                                        modifier = Modifier.size(24.dp),
-                                        tint = Color.White
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = celebrity.name,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color.White,
-                                    maxLines = 1
-                                )
-                                Text(
-                                    text = celebrity.role,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray,
-                                    maxLines = 1
-                                )
-                            }
-                        }
+                        CelebrityProfileCard(
+                            celebrity = celebrity,
+                            onClick = { onNavigateToCelebrity(celebrity.id) }
+                        )
                     }
                 }
             }
+        }
+    }
+}
+
+// Original CelebrityProfileCard without delete button
+@Composable
+fun CelebrityProfileCard(
+    celebrity: FavoriteCelebrity,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.width(120.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally, // This centers everything
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Show actual celebrity photo if available, otherwise show placeholder
+            if (celebrity.imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = "https://image.tmdb.org/t/p/w200${celebrity.imageUrl}",
+                    contentDescription = celebrity.name,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Fallback to placeholder
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(Color.Gray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Celebrity Placeholder",
+                        modifier = Modifier.size(24.dp),
+                        tint = Color.White
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = celebrity.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = Color.White,
+                maxLines = 1,
+                textAlign = TextAlign.Center, // Center the text
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = celebrity.role,
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray,
+                maxLines = 1,
+                textAlign = TextAlign.Center, // Center the text
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
