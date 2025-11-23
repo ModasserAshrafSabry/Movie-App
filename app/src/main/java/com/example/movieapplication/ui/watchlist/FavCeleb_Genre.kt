@@ -60,15 +60,14 @@ class FavCeleb_Genre : ComponentActivity() {
                     viewModel = profileViewModel,
                     genres = genreList,
                     onDoneClick = {
-                        markGenreSelectionCompletedAndGoToMain()
+                        markGenreSelection()
                     }
                 )
             }
         }
     }
 
-    // This function sets the flag and navigates to MainActivity
-    private fun markGenreSelectionCompletedAndGoToMain() {
+    private fun markGenreSelection() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser == null) {
             finish()
@@ -83,16 +82,13 @@ class FavCeleb_Genre : ComponentActivity() {
                 Log.d("FavCeleb_Genre", "Genre selection flag updated successfully")
 
                 val intent = Intent(this@FavCeleb_Genre, MainActivity::class.java)
-                  //  .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK) }
                 startActivity(intent)
                 finish()
             }
             .addOnFailureListener { e ->
                 Log.e("FavCeleb_Genre", "Failed to update flag: ${e.message}", e)
 
-                // Even if Firestore fails → don’t trap the user, just go to Main
                 val intent = Intent(this@FavCeleb_Genre, MainActivity::class.java)
-                   // .apply { addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK) }
                 startActivity(intent)
                 finish()
             }
@@ -108,7 +104,6 @@ fun GenreSelectionScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val selectedGenres = remember { mutableStateListOf<String>() }
 
-    // Sync selected genres with Firestore data
     LaunchedEffect(profileState.favoriteGenres) {
         selectedGenres.clear()
         selectedGenres.addAll(profileState.favoriteGenres)

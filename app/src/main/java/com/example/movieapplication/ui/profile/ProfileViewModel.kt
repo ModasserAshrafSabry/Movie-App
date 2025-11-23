@@ -118,18 +118,14 @@ class ProfileViewModel : ViewModel() {
             }
     }
 
-
-
     fun saveFavoriteGenre(genre: String) {
         viewModelScope.launch {
             val userId = auth.currentUser?.uid ?: return@launch
             try {
-                // Ensure document exists and merge
                 db.collection("users").document(userId)
                     .set(mapOf("favoriteGenres" to FieldValue.arrayUnion(genre)), SetOptions.merge())
                     .await()
 
-                // Update local state immediately
                 val updatedList = _profileState.value.favoriteGenres.toMutableList()
                 if (!updatedList.contains(genre)) updatedList.add(genre)
                 _profileState.value = _profileState.value.copy(favoriteGenres = updatedList)
