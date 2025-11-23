@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,16 +21,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.movieapp.data.MovieRepository
 import com.example.movieapp.model.Celebrity
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.tasks.await
 
-val db = Firebase.firestore
+val db = FirebaseFirestore.getInstance()
+val auth = FirebaseAuth.getInstance()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +46,16 @@ fun CelebrityDetailsScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var retryTrigger by remember { mutableStateOf(0) }
+    var isFavorite by remember { mutableStateOf(false) }
+    var isLoadingFavorite by remember { mutableStateOf(true) }
 
+    // Check if celebrity is in favorites
+    LaunchedEffect(currentCelebrity.id) {
+        checkIfFavorite(currentCelebrity.id) { favorite ->
+            isFavorite = favorite
+            isLoadingFavorite = false
+        }
+    }
 
     LaunchedEffect(basicCelebrity.id, retryTrigger) {
         isLoading = true
@@ -63,6 +77,12 @@ fun CelebrityDetailsScreen(
                     profileImagePaths = images
                 )
                 currentCelebrity = updatedCelebrity
+
+                // Check favorite status again when celebrity data is loaded
+                checkIfFavorite(updatedCelebrity.id) { favorite ->
+                    isFavorite = favorite
+                    isLoadingFavorite = false
+                }
             } else {
                 errorMessage = "Failed to load details"
             }
@@ -189,14 +209,44 @@ fun CelebrityDetailsScreen(
 
                     Spacer(Modifier.height(20.dp))
 
+                    // Updated Favorite Button
                     Button(
-                        onClick = { },
-                        colors = ButtonDefaults.buttonColors(Color(0xFFd8fd33)),
+                        onClick = {
+                            if (isFavorite) {
+                                removeFromFavorites(currentCelebrity)
+                                isFavorite = false
+                            } else {
+                                addToFavorites(currentCelebrity)
+                                isFavorite = true
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isFavorite) Color.Red else Color(0xFFd8fd33)
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(48.dp),
+                        enabled = !isLoadingFavorite
                     ) {
-                        Text("Add to Favourites", color = Color.Black, fontWeight = FontWeight.Bold)
+                        if (isLoadingFavorite) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color.Black,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = "Favorite",
+                                tint = Color.Black
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                if (isFavorite) "Remove from Favorites" else "Add to Favorites",
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
 
                     Spacer(Modifier.height(20.dp))
@@ -261,6 +311,83 @@ fun CelebrityDetailsScreen(
         }
     }
 }
+
+// Function to check if celebrity is in favorites
+private fun checkIfFavorite(celebrityId: Int, onResult: (Boolean) -> Unit) {
+    val userId = auth.currentUser?.uid ?: run {
+        onResult(false)
+        return
+    }
+
+    db.collection("users").document(userId)
+        .get()
+        .addOnSuccessListener { document ->
+            if (document.exists()) {
+                val favorites = document.get("favoriteCelebrities") as? List<Map<String, String>> ?: emptyList()
+                val isFavorite = favorites.any { it["id"] == celebrityId.toString() }
+                onResult(isFavorite)
+            } else {
+                onResult(false)
+            }
+        }
+        .addOnFailureListener {
+            onResult(false)
+        }
+}
+
+// Function to add celebrity to favorites
+private fun addToFavorites(celebrity: Celebrity) {
+    val userId = auth.currentUser?.uid ?: return
+
+    // Ensure we're saving just the path, not the full URL
+    val imagePath = celebrity.profilePath?.let { path ->
+        if (path.startsWith("http")) {
+            // Extract just the path part if it's a full URL
+            path.substringAfter("/w200")
+        } else {
+            path
+        }
+    } ?: ""
+
+    val celebrityData = hashMapOf<String, String>(
+        "id" to celebrity.id.toString(),
+        "name" to celebrity.name,
+        "role" to (celebrity.role ?: "Actor"),
+        "imageUrl" to imagePath
+    )
+
+    db.collection("users").document(userId)
+        .set(mapOf("favoriteCelebrities" to FieldValue.arrayUnion(celebrityData)), SetOptions.merge())
+        .addOnSuccessListener {
+            Log.d("FAVORITES", "Celebrity added to favorites")
+        }
+        .addOnFailureListener { e ->
+            Log.e("FAVORITES", "Error adding to favorites: ${e.message}")
+        }
+}
+
+private fun removeFromFavorites(celebrity: Celebrity) {
+    val userId = auth.currentUser?.uid ?: return
+
+
+    val celebrityData = hashMapOf<String, String>(
+        "id" to celebrity.id.toString(),
+        "name" to celebrity.name,
+        "role" to (celebrity.role ?: "Actor"),
+        "imageUrl" to (celebrity.profilePath ?: "")
+    )
+
+    db.collection("users").document(userId)
+        .update("favoriteCelebrities", FieldValue.arrayRemove(celebrityData))
+        .addOnSuccessListener {
+            Log.d("FAVORITES", "Celebrity removed from favorites")
+        }
+        .addOnFailureListener { e ->
+            Log.e("FAVORITES", "Error removing from favorites: ${e.message}")
+        }
+}
+
+
 
 @Composable
 fun SectionHeader(title: String) {

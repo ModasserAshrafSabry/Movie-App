@@ -26,6 +26,7 @@ class ProfileViewModel : ViewModel() {
     init {
         loadUserProfile()
         observeFavoriteGenres()
+        observeFavoriteCelebrities()
     }
 
     fun loadUserProfile() {
@@ -139,6 +140,28 @@ class ProfileViewModel : ViewModel() {
             }
         }
     }
+    fun removeFavoriteCelebrity(celebrity: FavoriteCelebrity) {
+        viewModelScope.launch {
+            val userId = auth.currentUser?.uid ?: return@launch
+            try {
+                val celebrityData = hashMapOf<String, String>(
+                    "id" to celebrity.id,
+                    "name" to celebrity.name,
+                    "role" to celebrity.role,
+                    "imageUrl" to celebrity.imageUrl
+                )
+
+                db.collection("users").document(userId)
+                    .update("favoriteCelebrities", FieldValue.arrayRemove(celebrityData))
+                    .await()
+
+                Log.d("ProfileVM", "Celebrity removed from favorites")
+
+            } catch (e: Exception) {
+                Log.e("ProfileVM", "Error removing celebrity: ${e.message}")
+            }
+        }
+    }
 
     fun removeFavoriteGenre(genre: String) {
         viewModelScope.launch {
@@ -156,6 +179,24 @@ class ProfileViewModel : ViewModel() {
                 Log.e("ProfileVM", "Error removing genre: ${e.message}")
             }
         }
+    }
+
+    fun observeFavoriteCelebrities() {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("users").document(userId)
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null && snapshot.exists()) {
+                    val favorites = (snapshot.get("favoriteCelebrities") as? List<Map<String, String>>)?.map {
+                        FavoriteCelebrity(
+                            id = it["id"] ?: "",
+                            name = it["name"] ?: "",
+                            role = it["role"] ?: "",
+                            imageUrl = it["imageUrl"] ?: ""
+                        )
+                    } ?: emptyList()
+                    _profileState.value = _profileState.value.copy(favoriteCelebrities = favorites)
+                }
+            }
     }
 
 

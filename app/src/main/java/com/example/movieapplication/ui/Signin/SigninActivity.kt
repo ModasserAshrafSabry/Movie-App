@@ -37,13 +37,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.movieapp.ui.theme.MovieAppTheme
 import com.example.movieapplication.ui.Login.LoginActivity
-import com.example.movieapplication.ui.watchlist.FavCeleb_Genre
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Suppress("UnusedMaterial3ScaffoldPaddingParameter")
 class SigninActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
 
     private fun hasUppercase(password: String): Boolean {
         return password.any { it.isUpperCase() }
@@ -57,7 +58,7 @@ class SigninActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         auth = FirebaseAuth.getInstance()
-
+        db = FirebaseFirestore.getInstance()
 
         setContent {
             MovieAppTheme {
@@ -98,6 +99,10 @@ class SigninActivity : ComponentActivity() {
                                 .addOnCompleteListener { task ->
                                     if (task.isSuccessful) {
                                         val user = auth.currentUser
+
+                                        // Save username to Firestore
+                                        saveUserToFirestore(user?.uid, username, email)
+
                                         user?.sendEmailVerification()?.addOnCompleteListener { verifyTask ->
                                             if (verifyTask.isSuccessful) {
                                                 Toast.makeText(
@@ -134,6 +139,29 @@ class SigninActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    //Save user data to Firestore
+    private fun saveUserToFirestore(userId: String?, username: String, email: String) {
+        if (userId == null) return
+
+        val userData = hashMapOf(
+            "username" to username,
+            "email" to email,
+            "favoriteGenres" to emptyList<String>(),
+            "favoriteCelebrities" to emptyList<Map<String, String>>(),
+            "hasCompletedGenreSelection" to false,
+            "createdAt" to com.google.firebase.Timestamp.now()
+        )
+
+        db.collection("users").document(userId)
+            .set(userData)
+            .addOnSuccessListener {
+                println("User data saved successfully to Firestore")
+            }
+            .addOnFailureListener { e ->
+                println("Error saving user data: ${e.message}")
+            }
     }
 }
 

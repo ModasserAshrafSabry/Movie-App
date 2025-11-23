@@ -1,6 +1,8 @@
 package com.example.movieapp.ui.navigation
 
 import android.net.Uri
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -10,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -36,6 +39,7 @@ import com.example.movieapplication.ui.details.MovieGridScreen
 import com.example.movieapplication.ui.viewmodel.SearchViewModel
 import com.google.gson.Gson
 import com.example.movieapplication.ui.details.SeeAllScreen
+
 
 val genreList = listOf(
     Genre(28, "Action"),
@@ -64,6 +68,7 @@ fun AppNavigation(
     viewModel: HomeViewModel,
     navController: NavHostController,
     modifier: Modifier = Modifier
+
 ) {
     val gson = Gson()
 
@@ -341,10 +346,30 @@ fun AppNavigation(
 
         // ---------------- PROFILE ----------------
         composable("profile") {
+            val context = LocalContext.current
+
             ProfileScreen(
                 onNavigateToSettings = { navController.navigate("account_settings") },
-                onNavigateToCelebrity = {},
-                onNavigateToGenre = {}
+                onNavigateToCelebrity = { celebrityId ->
+                    try {
+                        Log.d("NAVIGATION", "Navigating to celebrity details with ID: $celebrityId")
+
+                        // Check if celebrityId is valid
+                        if (celebrityId.isNotEmpty()) {
+                            // Use the correct route name that matches your existing route
+                            navController.navigate("celebrityDetails/$celebrityId")
+                        } else {
+                            Log.e("NAVIGATION", "Empty celebrity ID")
+                            Toast.makeText(context, "Invalid celebrity", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Log.e("NAVIGATION", "Error navigating to celebrity details: ${e.message}")
+                        Toast.makeText(context, "Navigation error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onNavigateToGenre = { genre ->
+                    Toast.makeText(context, "Clicked genre: $genre", Toast.LENGTH_SHORT).show()
+                }
             )
         }
 

@@ -230,7 +230,7 @@
                                     )
                                     Spacer(modifier = Modifier.width(2.dp))
                                     Text(
-                                        text = String.format("%.3f", topMovie.voteAverage ?: 0.0),
+                                        text = String.format("%.1f", topMovie.voteAverage ?: 0.0),
                                         color = Color.Yellow,
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Bold
@@ -450,7 +450,7 @@
                     maxLines = 1
                 )
                 Text(
-                    text = "⭐ ${movie.voteAverage ?: 0.0}",
+                    text = "⭐ ${String.format("%.1f", movie.voteAverage ?: 0.0)}",
                     color = Color.Gray,
                     fontSize = 12.sp
                 )
