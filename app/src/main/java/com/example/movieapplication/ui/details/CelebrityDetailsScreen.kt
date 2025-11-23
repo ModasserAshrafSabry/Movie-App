@@ -2,6 +2,7 @@ package com.example.movieapp.ui.celebrity
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -9,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -20,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -153,19 +156,19 @@ fun CelebrityDetailsScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(16.dp)
+                        .padding(top = 16.dp, bottom = 16.dp)
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(start = 18.dp)
+                        ,horizontalArrangement = Arrangement.Start,
                         verticalAlignment = Alignment.Top
                     ) {
                         AsyncImage(
                             model = imageUrl(currentCelebrity.profilePath, "w500"),
                             contentDescription = "Profile image",
                             modifier = Modifier
-                                .size(120.dp, 160.dp)
-                                .clip(RoundedCornerShape(8.dp)),
+                                .size(120.dp, 160.dp),
                             contentScale = ContentScale.Crop
                         )
 
@@ -183,7 +186,11 @@ fun CelebrityDetailsScreen(
 
                             currentCelebrity.birthday?.let { birthday ->
                                 if (birthday.isNotBlank() && birthday != "null") {
-                                    Text("Born: $birthday", color = Color.LightGray, fontSize = 14.sp)
+                                    Text(
+                                        "Born: $birthday",
+                                        color = Color.LightGray,
+                                        fontSize = 14.sp
+                                    )
                                     Spacer(Modifier.height(4.dp))
                                 }
                             }
@@ -221,86 +228,161 @@ fun CelebrityDetailsScreen(
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isFavorite) Color.Red else Color(0xFFd8fd33)
+                            containerColor = if (isFavorite) Color(0xFFDE6A6F) else Color(0xFFd8fd33)
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(horizontal = 18.dp)
                             .height(48.dp),
-                        enabled = !isLoadingFavorite
+                        enabled = !isLoadingFavorite,
+                        shape = RoundedCornerShape(5.dp)
                     ) {
-                        if (isLoadingFavorite) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = Color.Black,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Icon(
-                                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = "Favorite",
-                                tint = Color.Black
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                if (isFavorite) "Remove from Favorites" else "Add to Favorites",
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold
-                            )
+                        Row(
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (isLoadingFavorite) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = Color.Black,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.Add,
+                                    contentDescription = "Favorite",
+                                    tint = Color.Black
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = if (isFavorite) "Remove from Favorites" else "Add to Favorites",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Start
+                                )
+                            }
                         }
                     }
-
                     Spacer(Modifier.height(20.dp))
 
-                    currentCelebrity.biography?.let { bio ->
-                        if (bio.isNotBlank() && bio != "null") {
-                            SectionHeader("Biography")
-                            Text(
-                                text = bio,
-                                color = Color.LightGray,
-                                fontSize = 15.sp,
-                                lineHeight = 24.sp,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                            HorizontalDivider(
-                                color = Color.DarkGray.copy(0.5f),
-                                modifier = Modifier.padding(vertical = 16.dp)
-                            )
+
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF1c1c1c))
+                    ) {
+                        currentCelebrity.biography?.let { bio ->
+                            if (bio.isNotBlank() && bio != "null") {
+                                val maxLinesCollapsed = 4
+                                var expanded by remember { mutableStateOf(false) }
+
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 16.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(start = 18.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text("|", color = Color(0xFFd8fd33), fontSize = 27.sp)
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            "Biography",
+                                            color = Color.White,
+                                            fontSize = 25.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+
+                                    Spacer(Modifier.height(12.dp))
+
+                                    Text(
+                                        text = bio.trim(),
+                                        color = Color.LightGray,
+                                        fontSize = 15.sp,
+                                        lineHeight = 24.sp,
+                                        maxLines = if (expanded) Int.MAX_VALUE else maxLinesCollapsed,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier
+                                            .padding(horizontal = 19.dp)
+                                            .clickable { expanded = !expanded }
+                                    )
+
+                                    if (bio.lines().size > maxLinesCollapsed || bio.length > 200) {
+                                        Text(
+                                            text = if (expanded) "Show less" else "Read more",
+                                            color = Color(0xFFd8fd33),
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp,
+                                            modifier = Modifier
+                                                .padding(start = 19.dp, top = 8.dp, bottom = 20.dp)
+                                                .clickable { expanded = !expanded }
+                                        )
+                                    } else {
+                                        Spacer(modifier = Modifier.height(20.dp))
+                                    }
+                                }
+                            }
                         }
                     }
 
-                    if (currentCelebrity.profileImagePaths.isNotEmpty()) {
-                        Row(
-                            modifier = Modifier.padding(start = 8.dp, top = 2.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("|", color = Color(0xFFd8fd33), fontSize = 27.sp)
-                            Text(
-                                "Photos (${currentCelebrity.profileImagePaths.size})",
-                                color = Color.White,
-                                fontSize = 25.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
 
-                        Spacer(Modifier.height(12.dp))
 
-                        val photosToShow = currentCelebrity.profileImagePaths.take(10)
+                    Spacer(Modifier.height(16.dp))
 
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(horizontal = 4.dp),
-                            modifier = Modifier.height(180.dp)
-                        ) {
-                            items(photosToShow) { path ->
-                                AsyncImage(
-                                    model = imageUrl(path, "w300"),
-                                    contentDescription = "Celebrity photo",
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF1c1c1c))
+                    ) {
+                        if (currentCelebrity.profileImagePaths.isNotEmpty()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(start = 18.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("|", color = Color(0xFFd8fd33), fontSize = 27.sp)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        "Photos (${currentCelebrity.profileImagePaths.size})",
+                                        color = Color.White,
+                                        fontSize = 25.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                Spacer(Modifier.height(12.dp))
+
+                                val photosToShow = currentCelebrity.profileImagePaths.take(10)
+
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    contentPadding = PaddingValues(horizontal = 18.dp),
                                     modifier = Modifier
-                                        .width(120.dp)
+                                        .fillMaxWidth()
                                         .height(180.dp)
-                                        .clip(RoundedCornerShape(8.dp)),
-                                    contentScale = ContentScale.Crop
-                                )
+                                        .padding( bottom = 25.dp)
+
+                                ) {
+                                    items(photosToShow) { path ->
+                                        AsyncImage(
+                                            model = imageUrl(path, "w300"),
+                                            contentDescription = "Celebrity photo",
+                                            modifier = Modifier
+                                                .width(120.dp)
+                                                .height(180.dp)
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -312,7 +394,6 @@ fun CelebrityDetailsScreen(
     }
 }
 
-// Function to check if celebrity is in favorites
 private fun checkIfFavorite(celebrityId: Int, onResult: (Boolean) -> Unit) {
     val userId = auth.currentUser?.uid ?: run {
         onResult(false)
@@ -323,7 +404,8 @@ private fun checkIfFavorite(celebrityId: Int, onResult: (Boolean) -> Unit) {
         .get()
         .addOnSuccessListener { document ->
             if (document.exists()) {
-                val favorites = document.get("favoriteCelebrities") as? List<Map<String, String>> ?: emptyList()
+                val favorites =
+                    document.get("favoriteCelebrities") as? List<Map<String, String>> ?: emptyList()
                 val isFavorite = favorites.any { it["id"] == celebrityId.toString() }
                 onResult(isFavorite)
             } else {
@@ -335,14 +417,11 @@ private fun checkIfFavorite(celebrityId: Int, onResult: (Boolean) -> Unit) {
         }
 }
 
-// Function to add celebrity to favorites
 private fun addToFavorites(celebrity: Celebrity) {
     val userId = auth.currentUser?.uid ?: return
 
-    // Ensure we're saving just the path, not the full URL
     val imagePath = celebrity.profilePath?.let { path ->
         if (path.startsWith("http")) {
-            // Extract just the path part if it's a full URL
             path.substringAfter("/w200")
         } else {
             path
@@ -357,7 +436,10 @@ private fun addToFavorites(celebrity: Celebrity) {
     )
 
     db.collection("users").document(userId)
-        .set(mapOf("favoriteCelebrities" to FieldValue.arrayUnion(celebrityData)), SetOptions.merge())
+        .set(
+            mapOf("favoriteCelebrities" to FieldValue.arrayUnion(celebrityData)),
+            SetOptions.merge()
+        )
         .addOnSuccessListener {
             Log.d("FAVORITES", "Celebrity added to favorites")
         }
@@ -386,7 +468,6 @@ private fun removeFromFavorites(celebrity: Celebrity) {
             Log.e("FAVORITES", "Error removing from favorites: ${e.message}")
         }
 }
-
 
 
 @Composable

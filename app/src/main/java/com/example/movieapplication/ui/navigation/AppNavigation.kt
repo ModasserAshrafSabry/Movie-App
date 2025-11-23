@@ -196,7 +196,7 @@ fun AppNavigation(
                     navController.navigate("details/${Uri.encode(gson.toJson(movie))}")
                 },
                 onCelebrityClick = { cel ->
-                    // FIXED: Use 'cel' instead of 'celebrity' and URL encode parameters
+
                     val encodedName = Uri.encode(cel.name)
                     val encodedProfilePath = Uri.encode(cel.profilePath ?: "")
                     navController.navigate("celebrityDetails/${cel.id}?name=$encodedName&profilePath=$encodedProfilePath")
