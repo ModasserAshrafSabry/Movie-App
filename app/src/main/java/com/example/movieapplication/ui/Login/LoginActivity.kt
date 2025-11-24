@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +51,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.movieapp.MainActivity
@@ -209,7 +211,8 @@ fun LoginScreen(
                 },
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                color = textColor
+                color = textColor,
+                modifier = Modifier.testTag("login_title")
             )
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -227,7 +230,7 @@ fun LoginScreen(
                     cursorColor = buttonColor
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth(0.85f),
+                modifier = Modifier.fillMaxWidth(0.85f).testTag("email_field"),
                 shape = RoundedCornerShape(10.dp)
             )
 
@@ -256,7 +259,7 @@ fun LoginScreen(
                     unfocusedTextColor = textColor,
                     cursorColor = buttonColor
                 ),
-                modifier = Modifier.fillMaxWidth(0.85f),
+                modifier = Modifier.fillMaxWidth(0.85f).testTag("password_field"),
                 shape = RoundedCornerShape(10.dp)
             )
 
@@ -267,6 +270,7 @@ fun LoginScreen(
                 color = buttonColor,
                 fontSize = 15.sp,
                 modifier = Modifier
+                    .testTag("forgot_password_text")
                     .align(Alignment.End)
                     .padding(end = 36.dp)
                     .clickable { onForgotPasswordClick(email) }
@@ -278,6 +282,7 @@ fun LoginScreen(
                 onClick = { onLoginClick(email, password) },
                 enabled = !isLoading,
                 modifier = Modifier
+                    .testTag("login_button")
                     .fillMaxWidth(0.6f)
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -312,9 +317,18 @@ fun LoginScreen(
                 },
                 color = textColor,
                 fontSize = 16.sp,
-                modifier = Modifier.clickable(onClick = onSignUpClick)
+                modifier = Modifier.clickable(onClick = onSignUpClick).testTag("sign_up_text")
             )
         }
     }
+}
+
+@Preview
+@Composable
+private fun LoginScreenPreview() {
+    MovieAppTheme {
+        LoginScreen(isLoading = false, onLoginClick = { _, _ -> }, onSignUpClick = {}, onForgotPasswordClick = {})
+    }
+    
 }
 
