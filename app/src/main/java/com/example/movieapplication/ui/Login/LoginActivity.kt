@@ -1,5 +1,6 @@
 package com.example.movieapplication.ui.Login
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -8,7 +9,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,19 +26,30 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.movieapp.MainActivity
@@ -41,26 +62,36 @@ import com.google.firebase.firestore.FirebaseFirestore
 class LoginActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private var isLoading by mutableStateOf(false)
 
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         auth = FirebaseAuth.getInstance()
+
+        val currentUser = auth.currentUser
+        if (currentUser != null && currentUser.isEmailVerified) {
+            navigateBasedOnGenreSelection(currentUser.uid)
+            return
+        } else if (currentUser != null && !currentUser.isEmailVerified) {
+            auth.signOut()
+        }
 
         setContent {
             MovieAppTheme {
-                @Suppress("UnusedMaterial3ScaffoldPaddingParameter")
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     contentWindowInsets = WindowInsets(0)
                 ) {
                     LoginScreen(
+                        isLoading = isLoading,
                         onLoginClick = { email, password ->
                             loginUser(email, password)
                         },
                         onSignUpClick = {
-                            val i= Intent(this, SigninActivity::class.java)
-                            startActivity(i)
+                            startActivity(Intent(this@LoginActivity, SigninActivity::class.java))
                             finish()
                         },
                         onForgotPasswordClick = { email ->
@@ -78,42 +109,50 @@ class LoginActivity : ComponentActivity() {
             return
         }
 
+        isLoading = true
+
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
+                isLoading = false
+
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     if (user != null && user.isEmailVerified) {
                         Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
-
-                        // Check the flag from Firestore
-                        val db = FirebaseFirestore.getInstance()
-                        db.collection("users").document(user.uid)
-                            .get()
-                            .addOnSuccessListener { document ->
-                                val hasCompleted = document.getBoolean("hasCompletedGenreSelection") ?: false
-
-                                if (hasCompleted) {
-                                    val intent = Intent(this, MainActivity::class.java)
-                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                    startActivity(intent)
-                                    finish()
-                                } else {
-                                    val intent = Intent(this, FavCeleb_Genre::class.java)
-                                    startActivity(intent)
-                                    finish()
-                                }
-                            }
-                            .addOnFailureListener {
-                                startActivity(Intent(this, MainActivity::class.java))
-                                finish()
-                            }
+                        navigateBasedOnGenreSelection(user.uid)
                     } else {
-                        Toast.makeText(this, "Please verify your email first", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Please verify your email first", Toast.LENGTH_LONG)
+                            .show()
                         auth.signOut()
                     }
                 } else {
-                    Toast.makeText(this, "Login failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this,
+                        "Login failed: ${task.exception?.message ?: "Unknown error"}",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
+            }
+    }
+
+    private fun navigateBasedOnGenreSelection(uid: String) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("users").document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+                val hasCompleted = document.getBoolean("hasCompletedGenreSelection") ?: false
+                val targetActivity =
+                    if (hasCompleted) MainActivity::class.java else FavCeleb_Genre::class.java
+                val intent = Intent(this, targetActivity)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+            .addOnFailureListener {
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
             }
     }
 
@@ -128,7 +167,8 @@ class LoginActivity : ComponentActivity() {
                 if (task.isSuccessful) {
                     Toast.makeText(this, "Password reset email sent!", Toast.LENGTH_LONG).show()
                 } else {
-                    Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_LONG)
+                        .show()
                 }
             }
     }
@@ -136,10 +176,10 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginScreen(
-    modifier: Modifier = Modifier,
-    onLoginClick: (String, String) -> Unit = { _, _ -> },
-    onSignUpClick: () -> Unit = {},
-    onForgotPasswordClick: (String) -> Unit = {}
+    isLoading: Boolean = false,
+    onLoginClick: (String, String) -> Unit,
+    onSignUpClick: () -> Unit,
+    onForgotPasswordClick: (String) -> Unit
 ) {
     val bgColor = Color(0xFF080808)
     val buttonColor = Color(0xFF92B300)
@@ -149,11 +189,9 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(bgColor)
-    ) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(bgColor)) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -165,7 +203,7 @@ fun LoginScreen(
             Text(
                 text = buildAnnotatedString {
                     append("Welcome ")
-                    withStyle(style = androidx.compose.ui.text.SpanStyle(color = buttonColor)) {
+                    withStyle(style = SpanStyle(color = buttonColor)) {
                         append("Back")
                     }
                 },
@@ -200,6 +238,17 @@ fun LoginScreen(
                 onValueChange = { password = it },
                 label = { Text("Password", color = textColor.copy(alpha = 0.7f)) },
                 singleLine = true,
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = null,
+                            tint = buttonColor
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = textColor.copy(alpha = 0.3f),
                     focusedBorderColor = buttonColor,
@@ -207,14 +256,6 @@ fun LoginScreen(
                     unfocusedTextColor = textColor,
                     cursorColor = buttonColor
                 ),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(icon, contentDescription = null, tint = buttonColor)
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(0.85f),
                 shape = RoundedCornerShape(10.dp)
             )
@@ -228,15 +269,14 @@ fun LoginScreen(
                 modifier = Modifier
                     .align(Alignment.End)
                     .padding(end = 36.dp)
-                    .clickable {
-                        onForgotPasswordClick(email)
-                    }
+                    .clickable { onForgotPasswordClick(email) }
             )
 
             Spacer(modifier = Modifier.height(35.dp))
 
             Button(
                 onClick = { onLoginClick(email, password) },
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
                     .height(50.dp),
@@ -246,13 +286,19 @@ fun LoginScreen(
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(
-                    text = "Login",
-                    style = TextStyle(
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 3.dp,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Text(
+                        text = "Login",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
-                )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -260,7 +306,7 @@ fun LoginScreen(
             Text(
                 text = buildAnnotatedString {
                     append("Don’t have an account? ")
-                    withStyle(style = androidx.compose.ui.text.SpanStyle(color = buttonColor)) {
+                    withStyle(style = SpanStyle(color = buttonColor)) {
                         append("Sign Up")
                     }
                 },
@@ -272,10 +318,3 @@ fun LoginScreen(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun LoginScreenPreview() {
-    MovieAppTheme {
-        LoginScreen()
-    }
-}

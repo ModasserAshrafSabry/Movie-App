@@ -10,7 +10,8 @@ import com.example.movieapp.ui.home.HomeViewModel
 
 @Composable
 fun MainNavigationScaffold(
-    viewModel: HomeViewModel
+    viewModel: HomeViewModel,
+    onLogout: () -> Unit = {} // Add this parameter
 ) {
     val navController = rememberNavController()
 
@@ -34,12 +35,9 @@ fun MainNavigationScaffold(
                 BottomNavigationBar(
                     currentRoute = currentRoute,
                     onItemClick = { route ->
-
                         navController.navigate(route) {
                             popUpTo("home") { inclusive = false }
-
                             launchSingleTop = true
-
                             restoreState = true
                         }
                     }
@@ -50,7 +48,8 @@ fun MainNavigationScaffold(
         AppNavigation(
             viewModel = viewModel,
             navController = navController,
-            modifier = Modifier.padding()
+            modifier = Modifier.padding(),
+            onLogout = onLogout // Pass the callback to AppNavigation
         )
     }
 }

@@ -67,8 +67,8 @@ val genreList = listOf(
 fun AppNavigation(
     viewModel: HomeViewModel,
     navController: NavHostController,
-    modifier: Modifier = Modifier
-
+    modifier: Modifier = Modifier,
+    onLogout: () -> Unit = {} // This parameter receives the callback from MainActivity
 ) {
     val gson = Gson()
 
@@ -106,7 +106,6 @@ fun AppNavigation(
                     navController.navigate("details/$encoded")
                 },
                 onCelebrityClick = { celebrity ->
-                    // URL encode the name and profilePath to handle special characters
                     val encodedName = Uri.encode(celebrity.name)
                     val encodedProfilePath = Uri.encode(celebrity.profilePath ?: "")
                     navController.navigate("celebrityDetails/${celebrity.id}?name=$encodedName&profilePath=$encodedProfilePath")
@@ -164,7 +163,6 @@ fun AppNavigation(
             CelebrityListScreen(
                 celebrities = celebrities,
                 onCelebrityClick = { celebrity ->
-                    // URL encode the name and profilePath to handle special characters
                     val encodedName = Uri.encode(celebrity.name)
                     val encodedProfilePath = Uri.encode(celebrity.profilePath ?: "")
                     navController.navigate("celebrityDetails/${celebrity.id}?name=$encodedName&profilePath=$encodedProfilePath")
@@ -196,7 +194,6 @@ fun AppNavigation(
                     navController.navigate("details/${Uri.encode(gson.toJson(movie))}")
                 },
                 onCelebrityClick = { cel ->
-
                     val encodedName = Uri.encode(cel.name)
                     val encodedProfilePath = Uri.encode(cel.profilePath ?: "")
                     navController.navigate("celebrityDetails/${cel.id}?name=$encodedName&profilePath=$encodedProfilePath")
@@ -258,6 +255,7 @@ fun AppNavigation(
                         }
                     )
                 }
+
                 "genres" -> {
                     GenresScreen(
                         genres = genreList,
@@ -266,11 +264,11 @@ fun AppNavigation(
                         }
                     )
                 }
+
                 "celebrities" -> {
                     CelebrityListScreen(
                         celebrities = trendingCelebrities,
                         onCelebrityClick = { celebrity ->
-                            // URL encode the name and profilePath to handle special characters
                             val encodedName = Uri.encode(celebrity.name)
                             val encodedProfilePath = Uri.encode(celebrity.profilePath ?: "")
                             navController.navigate("celebrityDetails/${celebrity.id}?name=$encodedName&profilePath=$encodedProfilePath")
@@ -330,7 +328,6 @@ fun AppNavigation(
 
             val repository = viewModel.movieRepository
 
-            // Create basic celebrity with ID, name, and profile path
             val basicCelebrity = Celebrity(
                 id = celebrityId,
                 name = name,
@@ -354,9 +351,7 @@ fun AppNavigation(
                     try {
                         Log.d("NAVIGATION", "Navigating to celebrity details with ID: $celebrityId")
 
-                        // Check if celebrityId is valid
                         if (celebrityId.isNotEmpty()) {
-                            // Use the correct route name that matches your existing route
                             navController.navigate("celebrityDetails/$celebrityId")
                         } else {
                             Log.e("NAVIGATION", "Empty celebrity ID")
@@ -364,7 +359,11 @@ fun AppNavigation(
                         }
                     } catch (e: Exception) {
                         Log.e("NAVIGATION", "Error navigating to celebrity details: ${e.message}")
-                        Toast.makeText(context, "Navigation error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Navigation error: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 },
                 onNavigateToGenre = { genre ->
@@ -373,13 +372,10 @@ fun AppNavigation(
             )
         }
 
+        // ---------------- ACCOUNT SETTINGS ----------------
         composable("account_settings") {
             AccountSettingsScreen(
-                onLogout = {
-                    navController.navigate("login") {
-                        popUpTo("home") { inclusive = true }
-                    }
-                }
+                onLogout = onLogout // FIXED: Now calls the MainActivity's handleLogout() function
             )
         }
     }

@@ -1,5 +1,6 @@
 package com.example.movieapp.ui.settings
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,11 +24,27 @@ fun AccountSettingsScreen(
 ) {
     val settingsState by viewModel.settingsState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val navigationEvent by viewModel.navigationEvent.collectAsState()
+
+    LaunchedEffect(navigationEvent) {
+        when (navigationEvent) {
+            is LogoutEvent.Success -> {
+                Log.d("AccountSettingsScreen", "Logout success received, calling onLogout")
+                viewModel.clearNavigationEvent()
+                onLogout() // This should trigger MainActivity's handleLogout()
+            }
+            is LogoutEvent.Failure -> {
+                Log.e("AccountSettingsScreen", "Logout failure: ${(navigationEvent as LogoutEvent.Failure).message}")
+                viewModel.clearNavigationEvent()
+            }
+            null -> {}
+        }
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Account Settings") },
+                title = { Text("Account Settings", color = Color.White) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.Black
                 ),
@@ -42,7 +59,7 @@ fun AccountSettingsScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = Color.White)
             }
             return@Scaffold
         }
@@ -55,7 +72,7 @@ fun AccountSettingsScreen(
                 .padding(16.dp)
                 .padding(bottom = 30.dp)
         ) {
-
+            // Username Section
             Column {
                 Text(
                     text = "Username",
@@ -69,7 +86,16 @@ fun AccountSettingsScreen(
                     onValueChange = viewModel::updateUsername,
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Username") },
-                    singleLine = true
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    )
                 )
                 if (settingsState.isUsernameChanged) {
                     Text(
@@ -81,6 +107,7 @@ fun AccountSettingsScreen(
                 }
                 Button(
                     onClick = { viewModel.saveUsername() },
+                    enabled = settingsState.isUsernameChanged && settingsState.username.isNotBlank(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
@@ -106,7 +133,16 @@ fun AccountSettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Current Password") },
                     visualTransformation = PasswordVisualTransformation(),
-                    singleLine = true
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    )
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
@@ -115,7 +151,16 @@ fun AccountSettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("New Password") },
                     visualTransformation = PasswordVisualTransformation(),
-                    singleLine = true
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    )
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
@@ -124,7 +169,16 @@ fun AccountSettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Confirm New Password") },
                     visualTransformation = PasswordVisualTransformation(),
-                    singleLine = true
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    )
                 )
                 settingsState.passwordError?.let { error ->
                     Text(
@@ -144,6 +198,9 @@ fun AccountSettingsScreen(
                 }
                 Button(
                     onClick = { viewModel.savePassword() },
+                    enabled = settingsState.currentPassword.isNotBlank() &&
+                            settingsState.newPassword.isNotBlank() &&
+                            settingsState.confirmPassword.isNotBlank(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
@@ -161,8 +218,8 @@ fun AccountSettingsScreen(
             ) {
                 Button(
                     onClick = {
+                        Log.d("AccountSettingsScreen", "Logout button clicked")
                         viewModel.logout()
-                        onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Red,
@@ -173,7 +230,6 @@ fun AccountSettingsScreen(
                     Text("Logout")
                 }
                 Spacer(modifier = Modifier.height(60.dp))
-
             }
         }
     }

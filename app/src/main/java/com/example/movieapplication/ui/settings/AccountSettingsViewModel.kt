@@ -1,5 +1,6 @@
 package com.example.movieapp.ui.settings
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.EmailAuthProvider
@@ -22,6 +23,9 @@ class AccountSettingsViewModel : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _navigationEvent = MutableStateFlow<LogoutEvent?>(null)
+    val navigationEvent: StateFlow<LogoutEvent?> = _navigationEvent.asStateFlow()
 
     init {
         loadUserData()
@@ -92,15 +96,27 @@ class AccountSettingsViewModel : ViewModel() {
     }
 
     fun updateCurrentPassword(password: String) {
-        _settingsState.value = _settingsState.value.copy(currentPassword = password)
+        _settingsState.value = _settingsState.value.copy(
+            currentPassword = password,
+            passwordError = null,
+            isPasswordChanged = false
+        )
     }
 
     fun updateNewPassword(password: String) {
-        _settingsState.value = _settingsState.value.copy(newPassword = password)
+        _settingsState.value = _settingsState.value.copy(
+            newPassword = password,
+            passwordError = null,
+            isPasswordChanged = false
+        )
     }
 
     fun updateConfirmPassword(password: String) {
-        _settingsState.value = _settingsState.value.copy(confirmPassword = password)
+        _settingsState.value = _settingsState.value.copy(
+            confirmPassword = password,
+            passwordError = null,
+            isPasswordChanged = false
+        )
     }
 
     fun savePassword() {
@@ -111,9 +127,11 @@ class AccountSettingsViewModel : ViewModel() {
                 val user = auth.currentUser ?: throw Exception("User not authenticated")
                 val userEmail = user.email ?: throw Exception("User email not found")
 
-                if (state.newPassword != state.confirmPassword) {
+                _settingsState.value = state.copy(passwordError = null)
+
+                if (state.currentPassword.isBlank()) {
                     _settingsState.value = state.copy(
-                        passwordError = "New passwords don't match",
+                        passwordError = "Current password is required",
                         isPasswordChanged = false
                     )
                     return@launch
@@ -127,11 +145,16 @@ class AccountSettingsViewModel : ViewModel() {
                     return@launch
                 }
 
+                if (state.newPassword != state.confirmPassword) {
+                    _settingsState.value = state.copy(
+                        passwordError = "New passwords don't match",
+                        isPasswordChanged = false
+                    )
+                    return@launch
+                }
 
                 val credential = EmailAuthProvider.getCredential(userEmail, state.currentPassword)
                 user.reauthenticate(credential).await()
-
-
                 user.updatePassword(state.newPassword).await()
 
                 _settingsState.value = state.copy(
@@ -164,8 +187,38 @@ class AccountSettingsViewModel : ViewModel() {
     }
 
     fun logout() {
-        auth.signOut()
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                Log.d("AccountSettings", "Logout started")
+
+                auth.signOut()
+
+                Log.d("AccountSettings", "Firebase signOut completed")
+
+                _settingsState.value = AccountSettingsState()
+
+                _navigationEvent.value = LogoutEvent.Success
+
+                Log.d("AccountSettings", "Logout event triggered")
+            } catch (e: Exception) {
+                Log.e("AccountSettings", "Logout error: ${e.message}")
+                e.printStackTrace()
+                _navigationEvent.value = LogoutEvent.Failure(e.message ?: "Logout failed")
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
+
+    fun clearNavigationEvent() {
+        _navigationEvent.value = null
+    }
+}
+
+sealed class LogoutEvent {
+    object Success : LogoutEvent()
+    data class Failure(val message: String) : LogoutEvent()
 }
 
 data class AccountSettingsState(

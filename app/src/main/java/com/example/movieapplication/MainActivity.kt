@@ -1,5 +1,6 @@
 package com.example.movieapp
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,8 +18,12 @@ import com.example.movieapp.ui.navigation.MainNavigationScaffold
 import com.example.movieapp.ui.theme.MovieAppTheme
 import com.example.movieapp.viewmodel.WatchlistViewModel
 import com.example.movieapp.viewmodel.WatchlistViewModelFactory
+import com.example.movieapplication.ui.Login.LoginActivity
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
+
+    private val auth = FirebaseAuth.getInstance()
 
     private val homeViewModel: HomeViewModel by lazy {
         val movieRepository = MovieRepository()
@@ -41,17 +46,44 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge()
+        val currentUser = auth.currentUser
+        if (currentUser == null || !currentUser.isEmailVerified) {
+            navigateToLogin()
+            return
+        }
 
+        enableEdgeToEdge()
         setContent {
             MovieAppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-
-                    // ----------- التعديل المهم هنا -----------
-                    MainNavigationScaffold(viewModel = homeViewModel)
+                    MainNavigationScaffold(
+                        viewModel = homeViewModel,
+                        onLogout = {
+                            handleLogout()
+                        }
+                    )
                 }
             }
         }
     }
-}
 
+    private fun handleLogout() {
+        auth.signOut()
+        navigateToLogin()
+    }
+
+    private fun navigateToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val currentUser = auth.currentUser
+        if (currentUser == null || !currentUser.isEmailVerified) {
+            navigateToLogin()
+        }
+    }
+}
