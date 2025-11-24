@@ -181,9 +181,11 @@ fun AppNavigation(
 
             MovieDetailsScreen(
                 movie = movie,
+                navController = navController,      // must pass navController here
                 onBackClick = { navController.popBackStack() }
             )
         }
+
 
         // ---------------- SEARCH ----------------
         composable("search") {
@@ -371,6 +373,35 @@ fun AppNavigation(
                 }
             )
         }
+
+        composable(
+            "celebrityDetails/{celebrityId}?name={name}&profilePath={profilePath}",
+            arguments = listOf(
+                navArgument("celebrityId") { type = NavType.IntType },
+                navArgument("name") { type = NavType.StringType; nullable = true },
+                navArgument("profilePath") { type = NavType.StringType; nullable = true }
+            )
+        ) { backStackEntry ->
+            val celebrityId = backStackEntry.arguments?.getInt("celebrityId") ?: 0
+            val name = Uri.decode(backStackEntry.arguments?.getString("name") ?: "Loading...")
+            val profilePath = backStackEntry.arguments?.getString("profilePath")?.let {
+                if (it.isNotBlank()) Uri.decode(it) else null
+            }
+
+            val repository = viewModel.movieRepository
+            val basicCelebrity = Celebrity(
+                id = celebrityId,
+                name = name,
+                profilePath = profilePath
+            )
+
+            CelebrityDetailsScreen(
+                basicCelebrity = basicCelebrity,
+                repository = repository,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
 
         // ---------------- ACCOUNT SETTINGS ----------------
         composable("account_settings") {
