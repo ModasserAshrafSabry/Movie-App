@@ -104,4 +104,14 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.7.4")
     implementation("com.google.firebase:firebase-auth-ktx:22.1.2")
     implementation("com.google.firebase:firebase-firestore-ktx:24.8.1")
+
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.1")
+// 2. Mocking (Mocks)
+    testImplementation("io.mockk:mockk:1.13.8")
+// 3. Coroutines (لـ suspend fun)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+// 4. LiveData/ViewModel Testing
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
 }
