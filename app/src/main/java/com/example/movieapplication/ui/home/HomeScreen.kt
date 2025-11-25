@@ -33,16 +33,11 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
@@ -76,35 +71,15 @@ fun HomeScreen(
     val trendingMovies by viewModel.trendingMovies.collectAsState()
     val trendingCelebrities by viewModel.trendingCelebrities.collectAsState()
     val watchlistMovies by viewModel.watchlist.collectAsState(initial = emptyList())
-    val snackbarMessage by viewModel.snackbarMessage.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(snackbarMessage) {
-        snackbarMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearSnackbarMessage()
-        }
-    }
 
     Scaffold(
-
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState) { data ->
-                Snackbar(
-                    snackbarData = data,
-                    containerColor = Color(0xFF1E1E1E),
-                    contentColor = Color.White
-                )
-            }
-        },
         containerColor = Color.Black
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    color = Color.Black
-                )
+                .background(Color.Black)
+                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 12.dp)
         ) {
@@ -287,7 +262,11 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Box(
+            // باقي المحتوى (Trending Movies, Trending Celebrities, My Watchlist) كما هو بدون أي تغيير
+
+
+
+Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color(0xFF1c1c1c))
@@ -477,13 +456,13 @@ fun CelebrityItem(celeb: Celebrity, onClick: (Celebrity) -> Unit) {
             .padding(8.dp)
             .width(100.dp)
             .clickable { onClick(celeb) }
-        //            .clickable(
-        //                indication = null,
-        //                interactionSource = remember { MutableInteractionSource() }
-        //            ) {
-        //                if (!celeb.name.isNullOrBlank() && celeb.id != 0) {
-        //                    onClick(celeb)
-        //                }
+// .clickable(
+// indication = null,
+// interactionSource = remember { MutableInteractionSource() }
+// ) {
+// if (!celeb.name.isNullOrBlank() && celeb.id != 0) {
+// onClick(celeb)
+// }
         ,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
