@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -208,7 +209,8 @@ fun SigninScreen(
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
-                )
+                ),
+                modifier = Modifier.testTag("signup_title")
             )
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -235,6 +237,7 @@ fun SigninScreen(
                 shape = RoundedCornerShape(10.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = fieldModifier
+                    .testTag("username_field")
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -249,6 +252,7 @@ fun SigninScreen(
                 shape = RoundedCornerShape(10.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = fieldModifier
+                    .testTag("email_field")
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -270,6 +274,7 @@ fun SigninScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(10.dp),
                 modifier = fieldModifier
+                    .testTag("password_field")
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -291,6 +296,7 @@ fun SigninScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(10.dp),
                 modifier = fieldModifier
+                    .testTag("confirm_password_field")
             )
 
             Spacer(modifier = Modifier.height(35.dp))
@@ -299,6 +305,7 @@ fun SigninScreen(
             Button(
                 onClick = { onSignUpClick(username, email, password, confirmPassword) },
                 modifier = Modifier
+                    .testTag("sign_up_button")
                     .fillMaxWidth(0.6f)
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -325,7 +332,7 @@ fun SigninScreen(
                 },
                 color = textColor,
                 fontSize = 16.sp,
-                modifier = Modifier.clickable(onClick = onLoginClick)
+                modifier = Modifier.clickable(onClick = onLoginClick).testTag("login_text")
             )
         }
     }

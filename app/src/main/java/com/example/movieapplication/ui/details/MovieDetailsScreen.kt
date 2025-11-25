@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -29,10 +30,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.movieapp.R
 import com.example.movieapp.data.MovieRepository
 import com.example.movieapp.data.local.AppDatabase
@@ -47,6 +51,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MovieDetailsScreen(
     movie: Any,
+    navController: NavHostController,
     onBackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -119,6 +124,7 @@ fun MovieDetailsScreen(
             // -------------------------------
             DetailsBackdropSection(
                 details = movieDetails,
+                navController = navController,        // ✅ add this
                 posterPathFallback = posterPathProp,
                 onPlayTrailer = { trailerUrl ->
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(trailerUrl))
@@ -126,6 +132,7 @@ fun MovieDetailsScreen(
                 },
                 onBackClick = onBackClick
             )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -216,6 +223,42 @@ fun MovieDetailsScreen(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    scope.launch {
+                        if (!addedToPlaylist) {
+                            try {
+                                db.watchlistDao().addMovie(
+                                    MovieEntity(
+                                        id = id,
+                                        title = title,
+                                        posterPath = posterPathProp,
+                                        voteAverage = voteAverageProp,
+                                        overview = overviewProp
+                                    )
+                                )
+                                addedToPlaylist = true
+                                showSnackbar = true
+                            } catch (_: Exception) {
+                            }
+                        }
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFCCFF00)),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(
+                    text = if (addedToPlaylist) "✔ In Playlist" else "+ Add to playlist",
+                    color = Color.Black,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
 
 
 
@@ -249,20 +292,26 @@ fun MovieDetailsScreen(
                         // Cast LazyRow
                         if (castList.isNotEmpty()) {
                             LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp)
                             ) {
                                 items(castList.take(10)) { castMember ->
                                     Column(
                                         horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.width(100.dp)
+                                        modifier = Modifier
+                                            .width(100.dp)
+                                            .clickable {
+                                                val encodedName = Uri.encode(castMember.name ?: "Unknown")
+                                                val encodedProfile = Uri.encode(castMember.profile_path ?: "")
+                                                navController.navigate(
+                                                    "celebrityDetails/${castMember.id}?name=$encodedName&profilePath=$encodedProfile"
+                                                )
+                                            }
                                     ) {
                                         Image(
                                             painter = rememberAsyncImagePainter(
-                                                model = castMember.profile_path?.let {
-                                                    "https://image.tmdb.org/t/p/w200$it"
-                                                }
-                                                    ?: "https://via.placeholder.com/100x150?text=No+Image"
+                                                model = castMember.profile_path?.let { "https://image.tmdb.org/t/p/w200$it" }
+                                                    ?: R.drawable.no_image
                                             ),
                                             contentDescription = castMember.name,
                                             modifier = Modifier
@@ -270,29 +319,30 @@ fun MovieDetailsScreen(
                                                 .clip(RoundedCornerShape(8.dp)),
                                             contentScale = ContentScale.Crop
                                         )
-                                        Spacer(modifier = Modifier.height(6.dp))
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.width(100.dp)
-                                        ) {
-                                            Text(
-                                                text = castMember.name ?: "Unknown",
-                                                color = Color.White,
-                                                fontSize = 14.sp,
-                                                maxLines = 1,
-                                                textAlign = TextAlign.Center
-                                            )
-                                            Text(
-                                                text = castMember.character ?: "",
-                                                color = Color.LightGray,
-                                                fontSize = 12.sp,
-                                                maxLines = 1,
-                                                textAlign = TextAlign.Center
-                                            )
-                                        }
+
+                                        Spacer(Modifier.height(6.dp))
+
+                                        Text(
+                                            text = castMember.name ?: "Unknown",
+                                            color = Color.White,
+                                            fontSize = 14.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            textAlign = TextAlign.Center
+                                        )
+
+                                        Text(
+                                            text = castMember.character ?: "",
+                                            color = Color.LightGray,
+                                            fontSize = 12.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            textAlign = TextAlign.Center
+                                        )
                                     }
                                 }
                             }
+
                         }
 
                         Divider(thickness = .3.dp, color = Color.Gray)
@@ -368,41 +418,7 @@ fun MovieDetailsScreen(
             // -------------------------------
             // ADD TO PLAYLIST BUTTON
             // -------------------------------
-            Button(
-                onClick = {
-                    scope.launch {
-                        if (!addedToPlaylist) {
-                            try {
-                                db.watchlistDao().addMovie(
-                                    MovieEntity(
-                                        id = id,
-                                        title = title,
-                                        posterPath = posterPathProp,
-                                        voteAverage = voteAverageProp,
-                                        overview = overviewProp
-                                    )
-                                )
-                                addedToPlaylist = true
-                                showSnackbar = true
-                            } catch (_: Exception) {
-                            }
-                        }
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFCCFF00)),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = if (addedToPlaylist) "✔ In Playlist" else "+ Add to playlist",
-                    color = Color.Black,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+
 
             if (showSnackbar) {
                 Snackbar(
@@ -427,6 +443,7 @@ fun MovieDetailsScreen(
 @Composable
 private fun DetailsBackdropSection(
     details: MovieDetails?,
+    navController: NavHostController,
     posterPathFallback: String?,
     onPlayTrailer: (String) -> Unit,
     onBackClick: () -> Unit
@@ -476,11 +493,13 @@ private fun DetailsBackdropSection(
         details?.let { movie ->
             val year = movie.releaseDate?.take(4) ?: "----"
             val runtimeText = movie.runtime?.let { formatRuntime(it) } ?: ""
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 16.dp)
+                    .widthIn(max = 220.dp)   // ⭐ Prevent overlap with icons
                     .background(Color.Black.copy(alpha = 0.6f), shape = RoundedCornerShape(12.dp))
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
@@ -489,9 +508,13 @@ private fun DetailsBackdropSection(
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,              // ⭐ wrap instead of pushing sideways
+                    overflow = TextOverflow.Ellipsis
                 )
+
                 Spacer(modifier = Modifier.height(4.dp))
+
                 Text(
                     text = "$year • $runtimeText",
                     color = Color.LightGray,
@@ -500,6 +523,7 @@ private fun DetailsBackdropSection(
                 )
             }
         }
+
 
         // TOP BAR: Back + Share
         Row(
