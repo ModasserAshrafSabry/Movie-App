@@ -1,4 +1,3 @@
-// File: app/src/test/java/com/example/movieapplication/data/MovieRepositoryTest.kt
 
 package com.example.movieapplication.data
 
@@ -11,7 +10,6 @@ import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
