@@ -20,7 +20,7 @@ class MovieRepository {
             val response = apiService.getTrendingMovies(BuildConfig.TMDB_API_KEY)
             response
         } catch (e: Exception) {
-            Log.e("MoviesCheck", "Error fetching movies: ${e.message}")
+//            Log.e("MoviesCheck", "Error fetching movies: ${e.message}")
             null
         }
     }
