@@ -62,7 +62,6 @@ dependencies {
     implementation(libs.androidx.ui.text)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
-    implementation(libs.androidx.junit.ktx)
 
     val composeBom = platform("androidx.compose:compose-bom:2024.10.00")
     implementation(composeBom)
@@ -89,8 +88,6 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
-
 
     // Coil (for images)
     implementation("io.coil-kt:coil-compose:2.4.0")
@@ -103,14 +100,24 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.0")
     implementation("androidx.room:room-ktx:2.6.0")
     kapt("androidx.room:room-compiler:2.6.0")
-    androidTestImplementation("androidx.room:room-testing:2.6.1")
 
     implementation("androidx.compose.material:material-icons-extended:1.7.4")
     implementation("com.google.firebase:firebase-auth-ktx:22.1.2")
     implementation("com.google.firebase:firebase-firestore-ktx:24.8.1")
-    androidTestImplementation("app.cash.turbine:turbine:1.1.0")
-    testImplementation("app.cash.turbine:turbine:1.1.0")
-    testImplementation("io.mockk:mockk:1.13.12")
-    androidTestImplementation("androidx.test:core:1.5.0")
-    testImplementation(kotlin("test"))
+
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.1")
+// 2. Mocking (Mocks)
+    testImplementation("io.mockk:mockk:1.13.8")
+// 3. Coroutines (لـ suspend fun)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+// 4. LiveData/ViewModel Testing
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+
+// movie detail test(ui)
+    androidTestImplementation("androidx.navigation:navigation-testing:2.8.2")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
