@@ -11,7 +11,7 @@ abstract class
 AppDatabase : RoomDatabase() {
 
     abstract fun watchlistDao(): WatchlistDao
-    abstract fun movieDao(): MovieDao
+
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null

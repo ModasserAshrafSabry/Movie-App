@@ -155,7 +155,7 @@ fun MovieDetailsScreen(
                         ?: "https://via.placeholder.com/120x180?text=No+Poster"
                 Image(
                     painter = rememberAsyncImagePainter(posterUrl),
-                    contentDescription = movieDetails?.title ?: "Poster",
+                    contentDescription = "Movie Poster",
                     modifier = Modifier
                         .size(width = 120.dp, height = 180.dp)
                         .clip(RoundedCornerShape(10.dp))

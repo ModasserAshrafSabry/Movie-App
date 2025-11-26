@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,7 +40,7 @@ fun WatchlistScreen(
             .padding(16.dp)
     ) {
         // 🔙 زر الرجوع
-        TextButton(onClick = onBackClick) {
+        TextButton(onClick = onBackClick, modifier = Modifier.testTag("backButton")) {
             Text("← Back", color = Color.White, fontSize = 16.sp)
         }
 
@@ -49,7 +50,7 @@ fun WatchlistScreen(
             color = Color.White,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 12.dp)
+            modifier = Modifier.padding(bottom = 12.dp).testTag("watchlistTitle")
         )
 
         // 🕳️ لو القائمة فاضية
@@ -58,7 +59,8 @@ fun WatchlistScreen(
                 Text(
                     text = "Your watchlist is empty!",
                     color = Color.Gray,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    modifier = Modifier.testTag("emptyMessage")
                 )
             }
         } else {
@@ -69,11 +71,14 @@ fun WatchlistScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
+                            .testTag("movieItem_${movie.id}")
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onMovieClick(movie) },
+                                .clickable { onMovieClick(movie) }
+                                .testTag("movieRow_${movie.id}"),
+
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // 🖼️ صورة الفيلم
@@ -99,6 +104,7 @@ fun WatchlistScreen(
                                         .padding(4.dp)
                                         .size(24.dp)
                                         .clickable { onRemoveClick(movie) }
+                                        .testTag("removeButton_${movie.id}")
                                 )
                             }
 

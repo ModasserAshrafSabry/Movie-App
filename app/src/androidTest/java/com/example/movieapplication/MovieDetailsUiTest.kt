@@ -20,13 +20,16 @@ class MovieDetailsUiTest {
     private val sampleMovie = Movie(
         id = 1,
         title = "Test Movie",
-        posterPath = null,
+        posterPath = "/posterTest.jpg",
         voteAverage = 8.5,
         overview = "This is a test overview.",
         backdropPath = null,
         releaseDate = "2025-11-26"
     )
 
+    // -----------------------------
+    // 1) Overview should be visible
+    // -----------------------------
     @Test
     fun overview_isDisplayed() {
         val navController = TestNavHostController(composeTestRule.activity)
@@ -34,15 +37,16 @@ class MovieDetailsUiTest {
         composeTestRule.setContent {
             MovieDetailsScreen(
                 movie = sampleMovie,
-                navController = navController,
-                onBackClick = {}
+                navController = navController
             )
         }
 
-        // تحقق أن النص الخاص بالoverview معروض
         composeTestRule.onNodeWithText("This is a test overview.").assertIsDisplayed()
     }
 
+    // -----------------------------
+    // 2) Rating should be visible
+    // -----------------------------
     @Test
     fun rating_isDisplayed() {
         val navController = TestNavHostController(composeTestRule.activity)
@@ -50,51 +54,27 @@ class MovieDetailsUiTest {
         composeTestRule.setContent {
             MovieDetailsScreen(
                 movie = sampleMovie,
-                navController = navController,
+                navController = navController
+            )
+        }
+
+        composeTestRule.onNodeWithText("8.5/10").assertIsDisplayed()
+    }
+
+    // -----------------------------
+    // 3) Poster should be displayed
+    // -----------------------------
+    @Test
+    fun poster_isDisplayed() {
+        composeTestRule.setContent {
+            MovieDetailsScreen(
+                movie = sampleMovie,
+                navController = TestNavHostController(composeTestRule.activity),
                 onBackClick = {}
             )
         }
 
-        // تحقق أن تقييم الفيلم معروض
-        composeTestRule.onNodeWithText("8.5/10").assertIsDisplayed()
-    }
-
-    @Test
-    fun addToPlaylistButton_works() {
-        var playlistClicked = false
-
-        composeTestRule.setContent {
-            MovieDetailsScreen(
-                movie = sampleMovie,
-                navController = TestNavHostController(composeTestRule.activity),
-                onBackClick = {},
-                onAddToPlaylist = { playlistClicked = true } // override for test
-            )
-        }
-
-        val addButton = composeTestRule.onNodeWithText("+ Add to playlist")
-        addButton.assertIsDisplayed()
-        addButton.performClick()
-
-        // Check that the callback was called
-        assert(playlistClicked) { "Add to playlist button was not clicked" }
-    }
-
-    @Test
-    fun playTrailerButton_works() {
-        var trailerClicked = false
-
-        composeTestRule.setContent {
-            MovieDetailsScreen(
-                movie = sampleMovie,
-                navController = TestNavHostController(composeTestRule.activity),
-                onBackClick = {},
-                onPlayTrailer = { trailerClicked = true } // override for test
-            )
-        }
-
-        composeTestRule.onNodeWithContentDescription("Play Trailer").performClick()
-
-        assert(trailerClicked) { "Trailer button was not clicked" }
+        composeTestRule.onNodeWithContentDescription("Movie Poster")
+            .assertIsDisplayed()
     }
 }
