@@ -23,8 +23,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -121,12 +124,10 @@ fun MovieDetailsScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            // -------------------------------
-            // BACKDROP + BACK BUTTON + MORE
-            // -------------------------------
+
             DetailsBackdropSection(
                 details = movieDetails,
-                navController = navController,        // ✅ add this
+                navController = navController,
                 posterPathFallback = posterPathProp,
 
                 onPlayTrailer = { trailerUrl ->
@@ -304,8 +305,10 @@ fun MovieDetailsScreen(
                                         modifier = Modifier
                                             .width(100.dp)
                                             .clickable {
-                                                val encodedName = Uri.encode(castMember.name ?: "Unknown")
-                                                val encodedProfile = Uri.encode(castMember.profile_path ?: "")
+                                                val encodedName =
+                                                    Uri.encode(castMember.name ?: "Unknown")
+                                                val encodedProfile =
+                                                    Uri.encode(castMember.profile_path ?: "")
                                                 navController.navigate(
                                                     "celebrityDetails/${castMember.id}?name=$encodedName&profilePath=$encodedProfile"
                                                 )
@@ -503,7 +506,33 @@ private fun DetailsBackdropSection(
                     .align(Alignment.TopCenter)
                     .padding(top = 16.dp)
                     .widthIn(max = 220.dp)   // ⭐ Prevent overlap with icons
-                    .background(Color.Black.copy(alpha = 0.6f), shape = RoundedCornerShape(12.dp))
+                    .drawBehind {
+                        // Liquid glass effect - gradient overlay
+                        drawRoundRect(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.15f),
+                                    Color.White.copy(alpha = 0.05f)
+                                )
+                            ),
+                            cornerRadius = CornerRadius(12.dp.toPx()),
+                            style = Fill
+                        )
+                    }
+                    .background(
+                        color = Color.Black.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.3f),
+                                Color.White.copy(alpha = 0.1f)
+                            )
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    )
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
@@ -537,11 +566,37 @@ private fun DetailsBackdropSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // BACK BUTTON
-            IconButton(
-                onClick = onBackClick,
+            Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
+                    .drawBehind {
+                        // Liquid glass effect - gradient overlay
+                        drawCircle(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.15f),
+                                    Color.White.copy(alpha = 0.05f)
+                                )
+                            ),
+                            radius = size.minDimension / 2
+                        )
+                    }
+                    .background(
+                        color = Color.Black.copy(alpha = 0.3f),
+                        shape = CircleShape
+                    )
+                    .border(
+                        width = 1.dp,
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.3f),
+                                Color.White.copy(alpha = 0.1f)
+                            )
+                        ),
+                        shape = CircleShape
+                    )
+                    .clickable { onBackClick() },
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.ChevronLeft,
@@ -551,18 +606,44 @@ private fun DetailsBackdropSection(
                 )
             }
 
-            // SHARE BUTTON
-            IconButton(
-                onClick = {
-                    val intent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, "Watch the trailer: $trailerUrl")
-                    }
-                    context.startActivity(Intent.createChooser(intent, "Share via"))
-                },
+// SHARE BUTTON
+            Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
+                    .drawBehind {
+                        // Liquid glass effect - gradient overlay
+                        drawCircle(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.15f),
+                                    Color.White.copy(alpha = 0.05f)
+                                )
+                            ),
+                            radius = size.minDimension / 2
+                        )
+                    }
+                    .background(
+                        color = Color.Black.copy(alpha = 0.3f),
+                        shape = CircleShape
+                    )
+                    .border(
+                        width = 1.dp,
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.3f),
+                                Color.White.copy(alpha = 0.1f)
+                            )
+                        ),
+                        shape = CircleShape
+                    )
+                    .clickable {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, "Watch the trailer: $trailerUrl")
+                        }
+                        context.startActivity(Intent.createChooser(intent, "Share via"))
+                    },
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Share,
@@ -572,28 +653,49 @@ private fun DetailsBackdropSection(
                 )
             }
         }
-
-
-        // PLAY TRAILER BUTTON
-        IconButton(
-            onClick = { onPlayTrailer(trailerUrl) },
+// PLAY TRAILER BUTTON
+        Box(
             modifier = Modifier
                 .align(Alignment.Center)
                 .size(64.dp)
-                .background(Color.Black.copy(alpha = 0.35f), shape = CircleShape)
+                .drawBehind {
+                    // Liquid glass effect - gradient overlay
+                    drawCircle(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.15f),
+                                Color.White.copy(alpha = 0.05f)
+                            )
+                        ),
+                        radius = size.minDimension / 2
+                    )
+                }
+                .background(
+                    color = Color.Black.copy(alpha = 0.3f),
+                    shape = CircleShape
+                )
+                .border(
+                    width = 1.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.3f),
+                            Color.White.copy(alpha = 0.1f)
+                        )
+                    ),
+                    shape = CircleShape
+                )
+                .clickable { onPlayTrailer(trailerUrl) },
+            contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.PlayArrow,
                 contentDescription = "Play Trailer",
-                tint = Color(0xFFFFD54F),
+                tint = Color(0xFFcefc00),
                 modifier = Modifier.size(44.dp)
             )
         }
     }
 }
-
-
-
 
 
 private fun jobIsWriter(job: String?): Boolean {
