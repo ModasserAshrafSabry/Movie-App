@@ -44,7 +44,7 @@ fun MainNavigationScaffold(
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier.padding(
-                    bottom = if (showBottomBar) 90.dp else 0.dp   // ← هنا الحل
+                    bottom = if (showBottomBar) 2.dp else 0.dp
                 )
             )
         },
@@ -66,7 +66,7 @@ fun MainNavigationScaffold(
         AppNavigation(
             viewModel = viewModel,
             navController = navController,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.padding(),
             onLogout = onLogout
         )
     }
