@@ -15,7 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.unit.dp
 
 
@@ -52,7 +56,7 @@ fun BottomNavigationBar(
                 Icon(
                     imageVector = Icons.Default.Home,
                     contentDescription = "Home",
-                    tint = if (currentRoute == Screen.Home.route) Color.White else Color.Gray
+                    tint = Color.White
                 )
             },
             label = "Home",
@@ -63,7 +67,7 @@ fun BottomNavigationBar(
                 Icon(
                     imageVector = Icons.Default.Favorite,
                     contentDescription = "Wishlist",
-                    tint = if (currentRoute == Screen.Watchlist.route) Color.White else Color.Gray
+                    tint = Color.White
                 )
             },
             label = "Wishlist",
@@ -74,7 +78,7 @@ fun BottomNavigationBar(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile",
-                    tint = if (currentRoute == Screen.Profile.route) Color.White else Color.Gray
+                    tint = Color.White
                 )
             },
             label = "Profile",
@@ -86,17 +90,34 @@ fun BottomNavigationBar(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 20.dp)
-
             .background(Color.Transparent)
     ) {
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .clip(RoundedCornerShape(50.dp))
-                .background(Color(0xFF1E1E1E))
+                .drawBehind {
+                    // Liquid glass effect - gradient overlay
+                    drawRoundRect(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.15f),
+                                Color.White.copy(alpha = 0.05f)
+                            )
+                        ),
+                        cornerRadius = CornerRadius(50.dp.toPx()),
+                        style = Fill
+                    )
+                }
+                .background(Color(0xFF1E1E1E).copy(alpha = 0.6f))
                 .border(
                     width = 1.dp,
-                    color = Color.LightGray,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.3f),
+                            Color.White.copy(alpha = 0.1f)
+                        )
+                    ),
                     shape = RoundedCornerShape(50.dp)
                 )
                 .padding(horizontal = 24.dp, vertical = 12.dp),

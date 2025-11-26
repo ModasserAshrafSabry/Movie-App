@@ -2,6 +2,7 @@ package com.example.movieapp.ui.search
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,9 +49,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -112,6 +116,121 @@ fun SearchScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Search Bar Section
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .background(Color.Black)
+//                    .clip(
+//                        RoundedCornerShape(
+//                            topStart = 0.dp,
+//                            topEnd = 0.dp,
+//                            bottomStart = 24.dp,
+//                            bottomEnd = 24.dp
+//                        )
+//                    )
+//            ) {
+//                Box(
+//                    modifier = Modifier
+//                        .clip(
+//                            RoundedCornerShape(
+//                                topStart = 0.dp,
+//                                topEnd = 0.dp,
+//                                bottomStart = 24.dp,
+//                                bottomEnd = 24.dp
+//                            )
+//                        )
+//                        .background(Color(0xff1c1c1c))
+//                        .fillMaxWidth()
+//                        .padding(top = 28.dp)
+//                        .height(80.dp)
+//                ) {
+//                    Column(
+//                        modifier = Modifier
+//                            .padding(horizontal = 30.dp)
+//                            .clip(
+//                                RoundedCornerShape(
+//                                    topStart = 24.dp,
+//                                    topEnd = 24.dp,
+//                                    bottomStart = 24.dp,
+//                                    bottomEnd = 24.dp
+//                                )
+//                            )
+//                    ) {
+//                        OutlinedTextField(
+//                            value = query,
+//                            onValueChange = { searchViewModel.onQueryChanged(it) },
+//                            placeholder = {
+//                                Row(
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .padding(start = 30.dp),
+//                                    horizontalArrangement = Arrangement.Center,
+//                                    verticalAlignment = Alignment.CenterVertically
+//                                ) {
+//                                    Icon(
+//                                        imageVector = Icons.Default.Search,
+//                                        contentDescription = null,
+//                                        tint = Color.Gray
+//                                    )
+//                                    Spacer(modifier = Modifier.width(8.dp))
+//                                    Text(
+//                                        text = "Start searching",
+//                                        style = LocalTextStyle.current.copy(textAlign = TextAlign.Center)
+//                                    )
+//                                }
+//                            },
+//                            trailingIcon = {
+//                                if (query.isNotEmpty()) {
+//                                    IconButton(onClick = { searchViewModel.clearAll() }) {
+//                                        Icon(
+//                                            Icons.Default.Clear,
+//                                            contentDescription = "Clear",
+//                                            tint = Color.Gray
+//                                        )
+//                                    }
+//                                }
+//                            },
+//                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+//                            keyboardActions = KeyboardActions(
+//                                onSearch = { searchViewModel.performSearch() }
+//                            ),
+//                            modifier = Modifier
+//                                .padding(horizontal = 10.dp)
+//                                .fillMaxWidth(),
+//                            shape = RoundedCornerShape(30.dp),
+//                            colors = OutlinedTextFieldDefaults.colors(
+//                                focusedBorderColor = Color(0xFFa2a2a2),
+//                                unfocusedBorderColor = Color(0xFFa2a2a2),
+//                                focusedContainerColor = Color(0xFF1E1E1E),
+//                                unfocusedContainerColor = Color(0xFF1E1E1E),
+//                                cursorColor = Color.White,
+//                                focusedTextColor = Color.White,
+//                                unfocusedTextColor = Color.Gray
+//                            ),
+//                            singleLine = true
+//                        )
+//                    }
+//                }
+//
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(25.dp)
+//                        .background(
+//                            brush = Brush.verticalGradient(
+//                                colors = listOf(
+//                                    Color.Black,
+//                                    Color.Black.copy(alpha = 0.5f),
+//                                    Color.Transparent
+//                                )
+//                            )
+//                        )
+//                )
+//            }
+
+
+
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -192,13 +311,36 @@ fun SearchScreen(
                             ),
                             modifier = Modifier
                                 .padding(horizontal = 10.dp)
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .drawBehind {
+                                    // Liquid glass effect - blur simulation with layers
+                                    drawRoundRect(
+                                        brush = Brush.linearGradient(
+                                            colors = listOf(
+                                                Color.White.copy(alpha = 0.15f),
+                                                Color.White.copy(alpha = 0.05f)
+                                            )
+                                        ),
+                                        cornerRadius = CornerRadius(30.dp.toPx()),
+                                        style = Fill
+                                    )
+                                }
+                                .border(
+                                    width = 1.dp,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = 0.3f),
+                                            Color.White.copy(alpha = 0.1f)
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(30.dp)
+                                ),
                             shape = RoundedCornerShape(30.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFFa2a2a2),
-                                unfocusedBorderColor = Color(0xFFa2a2a2),
-                                focusedContainerColor = Color(0xFF1E1E1E),
-                                unfocusedContainerColor = Color(0xFF1E1E1E),
+                                focusedBorderColor = Color.Transparent,
+                                unfocusedBorderColor = Color.Transparent,
+                                focusedContainerColor = Color(0xFF1E1E1E).copy(alpha = 0.6f),
+                                unfocusedContainerColor = Color(0xFF1E1E1E).copy(alpha = 0.6f),
                                 cursorColor = Color.White,
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.Gray
@@ -462,8 +604,30 @@ fun SearchScreen(
                                                 .align(Alignment.TopEnd)
                                                 .padding(8.dp)
                                                 .size(40.dp)
+                                                .drawBehind {
+                                                    // Liquid glass effect - gradient overlay
+                                                    drawCircle(
+                                                        brush = Brush.linearGradient(
+                                                            colors = listOf(
+                                                                Color.White.copy(alpha = 0.15f),
+                                                                Color.White.copy(alpha = 0.05f)
+                                                            )
+                                                        ),
+                                                        radius = size.minDimension / 2
+                                                    )
+                                                }
                                                 .background(
-                                                    color = Color.Black.copy(alpha = 0.4f),
+                                                    color = Color.Black.copy(alpha = 0.3f),
+                                                    shape = RoundedCornerShape(20.dp)
+                                                )
+                                                .border(
+                                                    width = 1.dp,
+                                                    brush = Brush.linearGradient(
+                                                        colors = listOf(
+                                                            Color.White.copy(alpha = 0.3f),
+                                                            Color.White.copy(alpha = 0.1f)
+                                                        )
+                                                    ),
                                                     shape = RoundedCornerShape(20.dp)
                                                 )
                                         ) {

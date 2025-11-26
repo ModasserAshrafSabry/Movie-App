@@ -1,7 +1,9 @@
 package com.example.movieapp.ui.home
 
+import android.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +26,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -42,8 +46,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -138,16 +145,45 @@ fun HomeScreen(
                                 )
                         )
                         // Play Button Centered
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Play Trailer",
-                            tint = Color.White,
+                        Box(
                             modifier = Modifier
                                 .align(Alignment.Center)
-                                .size(64.dp)
-                                .background(Color.White.copy(alpha = 0.18f), shape = CircleShape)
-                                .clip(CircleShape)
-                        )
+                                .size(65.dp)
+                                .drawBehind {
+                                    drawCircle(
+                                        brush = Brush.linearGradient(
+                                            colors = listOf(
+                                                Color.White.copy(alpha = 0.15f),
+                                                Color.White.copy(alpha = 0.05f)
+                                            )
+                                        ),
+                                        radius = size.minDimension / 2
+                                    )
+                                }
+                                .background(
+                                    color = Color.Black.copy(alpha = 0.3f),
+                                    shape = CircleShape
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = 0.3f),
+                                            Color.White.copy(alpha = 0.1f)
+                                        )
+                                    ),
+                                    shape = CircleShape
+                                )
+                                .clip(CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Play Trailer",
+                                tint = Color(0xFFcefc00),
+                                modifier = Modifier.size(64.dp)
+                            )
+                        }
                         // Poster Card Layered In Front
                         Box(
                             modifier = Modifier
@@ -162,22 +198,53 @@ fun HomeScreen(
                                     .size(width = 120.dp, height = 183.dp)
                             )
 
-                            Icon(
-                                imageVector = if (isInWatchlist) Icons.Default.Close else Icons.Default.Add,
-                                contentDescription = "Toggle Watchlist",
-                                tint = if (isInWatchlist) Color.Red else Color.White,
+                            Box(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
                                     .padding(end = 1.dp, top = 4.dp)
-                                    .size(24.dp)
+                                    .size(42.dp)
+                                    .drawBehind {
+                                        // Liquid glass effect - gradient overlay
+                                        drawCircle(
+                                            brush = Brush.linearGradient(
+                                                colors = listOf(
+                                                    Color.White.copy(alpha = 0.15f),
+                                                    Color.White.copy(alpha = 0.05f)
+                                                )
+                                            ),
+                                            radius = size.minDimension / 2
+                                        )
+                                    }
+                                    .background(
+                                        color = Color.Black.copy(alpha = 0.4f),
+                                        shape = CircleShape
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        brush = Brush.linearGradient(
+                                            colors = listOf(
+                                                Color.White.copy(alpha = 0.3f),
+                                                Color.White.copy(alpha = 0.1f)
+                                            )
+                                        ),
+                                        shape = CircleShape
+                                    )
                                     .clickable {
                                         if (isInWatchlist) {
                                             viewModel.removeFromWatchlist(topMovie)
                                         } else {
                                             viewModel.addToWatchlist(topMovie)
                                         }
-                                    }
-                            )
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = if (isInWatchlist) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    contentDescription = "Toggle Watchlist",
+                                    tint = if (isInWatchlist) Color.Red else Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
                         }
                         // Title and rating in front of trailer
                         Column(
@@ -239,20 +306,47 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Search for Movies, People.. ",
-                            style = LocalTextStyle.current.copy(textAlign = TextAlign.Center)
+                            style = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                            color = Color.White
                         )
                     }
-                }, modifier = Modifier
+                },
+                modifier = Modifier
                     .padding(horizontal = 10.dp)
                     .width(300.dp)
                     .align(alignment = CenterHorizontally)
+                    .drawBehind {
+                        // Liquid glass effect - blur simulation with layers
+                        drawRoundRect(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.15f),
+                                    Color.White.copy(alpha = 0.05f)
+                                )
+                            ),
+                            cornerRadius = CornerRadius(30.dp.toPx()),
+                            style = Fill
+                        )
+                    }
+                    .border(
+                        width = 1.dp,
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.3f),
+                                Color.White.copy(alpha = 0.1f)
+                            )
+                        ),
+                        shape = RoundedCornerShape(30.dp)
+                    )
                     .clickable { onSearchClick() },
                 shape = RoundedCornerShape(30.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFE5DDDD),
-                    unfocusedBorderColor = Color(0xFFE3D8D8),
-                    focusedContainerColor = Color(0xFF1E1E1E),
-                    unfocusedContainerColor = Color(0xFF1E1E1E),
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    disabledBorderColor = Color.Transparent,
+                    focusedContainerColor = Color(0xFF1E1E1E).copy(alpha = 0.6f),
+                    unfocusedContainerColor = Color(0xFF1E1E1E).copy(alpha = 0.6f),
+                    disabledContainerColor = Color(0xFF1E1E1E).copy(alpha = 0.6f),
                     cursorColor = Color.White,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.Gray
@@ -265,8 +359,7 @@ fun HomeScreen(
             // باقي المحتوى (Trending Movies, Trending Celebrities, My Watchlist) كما هو بدون أي تغيير
 
 
-
-Box(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color(0xFF1c1c1c))
@@ -370,7 +463,8 @@ Box(
                             .padding(start = 2.dp)
                     )
                     TextButton(onClick = onViewAllClick) {
-                        Text("View All", color = Color(0xFFd8fd33), fontSize = 14.sp)
+                        Text("View All", color = Color(0xFFd8fd33), fontSize = 14.sp
+                            , textDecoration = TextDecoration.Underline)
                     }
                 }
 
@@ -432,16 +526,47 @@ fun MovieItem(
                 fontSize = 12.sp
             )
         }
-        Icon(
-            imageVector = if (isInWatchlist) Icons.Default.Close else Icons.Default.Add,
-            contentDescription = "Toggle Watchlist",
-            tint = if (isInWatchlist) Color.Red else Color.White,
+        Box(
             modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(end = 15.dp, top = 3.dp)
-                .size(22.dp)
-                .clickable { onToggleWatchlist(movie) }
-        )
+                .align(Alignment.BottomEnd)
+                .padding(end = 15.dp, top = 3.dp, bottom = 55.dp)
+                .size(40.dp)
+                .drawBehind {
+                    // Liquid glass effect - gradient overlay
+                    drawCircle(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.15f),
+                                Color.White.copy(alpha = 0.05f)
+                            )
+                        ),
+                        radius = size.minDimension / 2
+                    )
+                }
+                .background(
+                    color = Color.Black.copy(alpha = 0.3f),
+                    shape = CircleShape
+                )
+                .border(
+                    width = 1.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.3f),
+                            Color.White.copy(alpha = 0.1f)
+                        )
+                    ),
+                    shape = CircleShape
+                )
+                .clickable { onToggleWatchlist(movie) },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (isInWatchlist) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = "Toggle Watchlist",
+                tint = if (isInWatchlist) Color.Red else Color.White,
+                modifier = Modifier.size(22.dp)
+            )
+        }
     }
 }
 
@@ -456,13 +581,6 @@ fun CelebrityItem(celeb: Celebrity, onClick: (Celebrity) -> Unit) {
             .padding(8.dp)
             .width(100.dp)
             .clickable { onClick(celeb) }
-// .clickable(
-// indication = null,
-// interactionSource = remember { MutableInteractionSource() }
-// ) {
-// if (!celeb.name.isNullOrBlank() && celeb.id != 0) {
-// onClick(celeb)
-// }
         ,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -475,7 +593,13 @@ fun CelebrityItem(celeb: Celebrity, onClick: (Celebrity) -> Unit) {
             contentScale = ContentScale.Crop
         )
         Text(
-            text = celeb.name ?: "Unknown",
+            text = celeb.name?.let {
+                if (it.length > 12) {
+                    it.substring(0, 12) + "..."
+                } else {
+                    it
+                }
+            } ?: "Unknown",
             color = Color.White,
             fontSize = 12.sp,
             maxLines = 1
@@ -524,15 +648,46 @@ fun WatchlistItem(
                 .clickable { onMovieClick(movieFromEntity) },
             contentScale = ContentScale.Crop
         )
-        Icon(
-            imageVector = Icons.Default.Close,
-            contentDescription = "Remove from Watchlist",
-            tint = Color.Red,
+        Box(
             modifier = Modifier
-                .align(Alignment.TopEnd)
+                .align(Alignment.BottomEnd)
                 .padding(6.dp)
-                .size(22.dp)
-                .clickable { onRemoveClick(movieFromEntity) }
-        )
+                .size(40.dp)
+                .drawBehind {
+                    // Liquid glass effect - gradient overlay
+                    drawCircle(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.15f),
+                                Color.White.copy(alpha = 0.05f)
+                            )
+                        ),
+                        radius = size.minDimension / 2
+                    )
+                }
+                .background(
+                    color = Color.Black.copy(alpha = 0.3f),
+                    shape = CircleShape
+                )
+                .border(
+                    width = 1.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.3f),
+                            Color.White.copy(alpha = 0.1f)
+                        )
+                    ),
+                    shape = CircleShape
+                )
+                .clickable { onRemoveClick(movieFromEntity) },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Favorite,
+                contentDescription = "Remove from Watchlist",
+                tint = Color.Red,
+                modifier = Modifier.size(22.dp)
+            )
+        }
     }
 }
