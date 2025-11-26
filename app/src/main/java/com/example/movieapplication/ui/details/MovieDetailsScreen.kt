@@ -52,7 +52,9 @@ import kotlinx.coroutines.launch
 fun MovieDetailsScreen(
     movie: Any,
     navController: NavHostController,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onPlayTrailer: () -> Unit = {},
+    onAddToPlaylist: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -126,6 +128,7 @@ fun MovieDetailsScreen(
                 details = movieDetails,
                 navController = navController,        // ✅ add this
                 posterPathFallback = posterPathProp,
+
                 onPlayTrailer = { trailerUrl ->
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(trailerUrl))
                     context.startActivity(intent)

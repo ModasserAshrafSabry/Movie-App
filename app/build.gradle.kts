@@ -114,4 +114,10 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
 // 4. LiveData/ViewModel Testing
     testImplementation("androidx.arch.core:core-testing:2.2.0")
+
+// movie detail test(ui)
+    androidTestImplementation("androidx.navigation:navigation-testing:2.8.2")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
