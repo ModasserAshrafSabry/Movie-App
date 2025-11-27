@@ -32,9 +32,12 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -359,7 +362,7 @@ fun MovieDetailsScreen(
 
                         }
 
-                        Divider(thickness = .3.dp, color = Color.Gray)
+                        Divider(thickness = .3.dp, color =  Color(0xFF2D2D2D))
 
 // Crew summary
                         val ageRating = movieDetails?.ageRating ?: "NR"
@@ -394,7 +397,7 @@ fun MovieDetailsScreen(
 
                             // --- FULL WIDTH DIVIDER (NOT inside padding) ---
                             if (directors.isNotEmpty() && writers.isNotEmpty()) {
-                                Divider(thickness = .3.dp, color = Color.Gray)
+                                Divider(thickness = .3.dp, color =  Color(0xFF2D2D2D))
                             }
 
                             // --- WRITER ROW (inside padding) ---
@@ -421,7 +424,7 @@ fun MovieDetailsScreen(
                             }
 
                             // bottom divider full width
-                            Divider(thickness = .3.dp, color = Color.Gray)
+                            Divider(thickness = .3.dp, color =  Color(0xFF2D2D2D))
                         }
                         // Bottom row: Age Rating • Rate this • Rating box
                         Row(
@@ -463,7 +466,7 @@ fun MovieDetailsScreen(
                                 shape = RoundedCornerShape(8.dp),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp)
                             ) {
-                                Text(text = "Rate This", color = Color(0xFF080808))
+                                Text(text = "Rate This", color = Color(0xFF080808),fontSize = 18.sp)
                             }
 
                             // 🔹 Column 3 — Rating + Votes
@@ -474,18 +477,28 @@ fun MovieDetailsScreen(
                                     painter = painterResource(id = R.drawable.star_icon),
                                     contentDescription = "Rating Icon",
                                     modifier = Modifier
-                                        .size(20.dp)
+                                        .size(25.dp)
                                         .padding(bottom = 4.dp)
                                 )
 
                                 // ⭐ Rating text
                                 val displayRating = movieDetails?.voteAverage ?: voteAverageProp
+                                val voteColor =  Color.LightGray// your voting color
                                 displayRating?.let { r ->
                                     Text(
-                                        text = String.format("%.1f/10", r),
-                                        color = Color(0xFFFFD54F),
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold
+                                        text = buildAnnotatedString {
+                                            withStyle(style = SpanStyle(
+                                                color = Color.White,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                            ) {
+                                                append(String.format("%.1f",displayRating)) // the rating number in white
+                                            }
+                                            withStyle(style = SpanStyle(color = voteColor, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)) {
+                                                append("/10") // the "/10" in voting color
+                                            }
+                                        },
+                                        fontSize = 14.sp
                                     )
                                 }
 
