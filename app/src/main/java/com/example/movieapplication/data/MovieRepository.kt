@@ -142,5 +142,12 @@ class MovieRepository {
 
         return rating ?: "NR"
     }
+    suspend fun getMovieDetailsWithAge(movieId: Int): MovieDetails {
+        val details = getMovieDetails(movieId) // existing method
+        val rating = getAgeRating(movieId)     // fetch age rating
+
+        details.ageRating = rating             // assign it
+        return details
+    }
 
 }

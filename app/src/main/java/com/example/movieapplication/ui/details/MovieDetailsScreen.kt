@@ -64,6 +64,7 @@ fun MovieDetailsScreen(
     val scope = rememberCoroutineScope()
     val db = remember { AppDatabase.getDatabase(context) }
 
+
     val title = when (movie) {
         is Movie -> movie.title ?: "Unknown Title"
         is MovieEntity -> movie.title
@@ -100,6 +101,8 @@ fun MovieDetailsScreen(
         try {
             val repo = MovieRepository()
             movieDetails = repo.getMovieDetails(id)
+            val detailsWithAge = repo.getMovieDetailsWithAge(id)
+            movieDetails = detailsWithAge
             val credits = repo.getMovieCredits(id)
             castList = credits.cast
             crewList = credits.crew
@@ -360,6 +363,7 @@ fun MovieDetailsScreen(
 
 // Crew summary
                         val ageRating = movieDetails?.ageRating ?: "NR"
+
                         val directors = crewList.filter { it.job.equals("Director", true) }
                         val writers = crewList.filter { jobIsWriter(it.job) }.take(1)
 
@@ -454,12 +458,12 @@ fun MovieDetailsScreen(
                             Button(
                                 onClick = { /* TODO: Handle rating */ },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF333333)
+                                    containerColor = Color(0xFFCEFC00)
                                 ),
                                 shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp)
                             ) {
-                                Text(text = "Rate This", color = Color.White)
+                                Text(text = "Rate This", color = Color(0xFF080808))
                             }
 
                             // 🔹 Column 3 — Rating + Votes
