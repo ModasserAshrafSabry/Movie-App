@@ -184,7 +184,8 @@ fun MovieDetailsScreen(
 
                 // Overview and rating
                 var expanded by remember { mutableStateOf(false) }
-                val overviewText = overviewProp ?: movieDetails?.overview ?: "No overview available."
+                val overviewText =
+                    overviewProp ?: movieDetails?.overview ?: "No overview available."
                 val previewLimit = 150 // number of characters before showing "Read more"
 
                 Column(modifier = Modifier.weight(1f)) {
@@ -353,7 +354,7 @@ fun MovieDetailsScreen(
                                             color = Color.White,
                                             fontSize = 14.sp,
                                             maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
+
                                             textAlign = TextAlign.Center
                                         )
 
@@ -362,7 +363,7 @@ fun MovieDetailsScreen(
                                             color = Color.LightGray,
                                             fontSize = 12.sp,
                                             maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
+                                            
                                             textAlign = TextAlign.Center
                                         )
                                     }
@@ -370,8 +371,8 @@ fun MovieDetailsScreen(
                             }
 
                         }
-
-                        Divider(thickness = .3.dp, color =  Color(0xFF2D2D2D))
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Divider(thickness = .3.dp, color = Color(0xFF2D2D2D))
 
 // Crew summary
                         val ageRating = movieDetails?.ageRating ?: "NR"
@@ -406,7 +407,7 @@ fun MovieDetailsScreen(
 
                             // --- FULL WIDTH DIVIDER (NOT inside padding) ---
                             if (directors.isNotEmpty() && writers.isNotEmpty()) {
-                                Divider(thickness = .3.dp, color =  Color(0xFF2D2D2D))
+                                Divider(thickness = .3.dp, color = Color(0xFF2D2D2D))
                             }
 
                             // --- WRITER ROW (inside padding) ---
@@ -433,7 +434,7 @@ fun MovieDetailsScreen(
                             }
 
                             // bottom divider full width
-                            Divider(thickness = .3.dp, color =  Color(0xFF2D2D2D))
+                            Divider(thickness = .3.dp, color = Color(0xFF2D2D2D))
                         }
                         // Bottom row: Age Rating • Rate this • Rating box
                         Row(
@@ -448,10 +449,10 @@ fun MovieDetailsScreen(
 
                                 Icon(
 
-                                        Icons.Default.Shield,
-                                        contentDescription = "Back",
-                                        tint = Color(0xFF00D17B),
-                                        modifier = Modifier.size(26.dp)
+                                    Icons.Default.Shield,
+                                    contentDescription = "Back",
+                                    tint = Color(0xFF00D17B),
+                                    modifier = Modifier.size(26.dp)
                                 )
                                 Text(
                                     text = "Age",
@@ -471,17 +472,26 @@ fun MovieDetailsScreen(
                             var userRating by remember { mutableStateOf(0) }
                             Button(
                                 onClick = { showRatingDialog = true },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFCEFC00)),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(
+                                        0xFFCEFC00
+                                    )
+                                ),
                                 shape = RoundedCornerShape(8.dp),
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp)
                             ) {
-                                Text(text = "Rate This", color = Color(0xFF080808), fontSize = 18.sp)
+                                Text(
+                                    text = "Rate This",
+                                    color = Color(0xFF080808),
+                                    fontSize = 18.sp
+                                )
                             }
 
                             if (showRatingDialog) {
-                                Dialog(onDismissRequest = { showRatingDialog = false },
+                                Dialog(
+                                    onDismissRequest = { showRatingDialog = false },
 
-                                        properties = DialogProperties(usePlatformDefaultWidth = false)
+                                    properties = DialogProperties(usePlatformDefaultWidth = false)
                                 ) {
 
                                     BlurredDialogBackground(
@@ -500,7 +510,8 @@ fun MovieDetailsScreen(
                                         Spacer(modifier = Modifier.height(12.dp))
 
                                         // Poster
-                                        val posterUrl = movieDetails?.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" }
+                                        val posterUrl =
+                                            movieDetails?.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" }
                                         Image(
                                             painter = rememberAsyncImagePainter(posterUrl),
                                             contentDescription = "Poster",
@@ -554,18 +565,30 @@ fun MovieDetailsScreen(
 
                                 // ⭐ Rating text
                                 val displayRating = movieDetails?.voteAverage ?: voteAverageProp
-                                val voteColor =  Color.LightGray// your voting color
+                                val voteColor = Color.LightGray// your voting color
                                 displayRating?.let { r ->
                                     Text(
                                         text = buildAnnotatedString {
-                                            withStyle(style = SpanStyle(
-                                                color = Color.White,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
+                                            withStyle(
+                                                style = SpanStyle(
+                                                    color = Color.White,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
                                             ) {
-                                                append(String.format("%.1f",displayRating)) // the rating number in white
+                                                append(
+                                                    String.format(
+                                                        "%.1f",
+                                                        displayRating
+                                                    )
+                                                ) // the rating number in white
                                             }
-                                            withStyle(style = SpanStyle(color = voteColor, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)) {
+                                            withStyle(
+                                                style = SpanStyle(
+                                                    color = voteColor,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    fontSize = 12.sp
+                                                )
+                                            ) {
                                                 append("/10") // the "/10" in voting color
                                             }
                                         },
@@ -575,7 +598,12 @@ fun MovieDetailsScreen(
 
                                 // ⭐ Votes
                                 Text(
-                                    text = "${String.format("%,d", movieDetails?.voteCount ?: 0)} votes",
+                                    text = "${
+                                        String.format(
+                                            "%,d",
+                                            movieDetails?.voteCount ?: 0
+                                        )
+                                    } votes",
                                     color = Color.LightGray,
                                     fontSize = 12.sp
                                 )
@@ -877,6 +905,7 @@ private fun formatRuntime(totalMinutes: Int): String {
     val minutes = totalMinutes % 60
     return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
 }
+
 @Composable
 fun BlurredDialogBackground(
     imageUrl: String,
