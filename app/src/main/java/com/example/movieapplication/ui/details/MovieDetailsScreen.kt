@@ -363,7 +363,7 @@ fun MovieDetailsScreen(
                                             color = Color.LightGray,
                                             fontSize = 12.sp,
                                             maxLines = 1,
-                                            
+
                                             textAlign = TextAlign.Center
                                         )
                                     }
