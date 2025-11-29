@@ -182,7 +182,7 @@ class SplashActivity : ComponentActivity() {
 // ---------------- Compose UI ----------------
 
 @Composable
-fun IntroScreen(onGetInClick: () -> Unit, testMode: Boolean = true, modifier: Modifier = Modifier) {
+fun IntroScreen(onGetInClick: () -> Unit, testMode: Boolean = false, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -202,7 +202,7 @@ fun IntroScreen(onGetInClick: () -> Unit, testMode: Boolean = true, modifier: Mo
 
 @Composable
 fun HeaderSection(onGetInClick: () -> Unit, testMode: Boolean = false) {
-    var visible by remember { mutableStateOf(testMode) }
+    var visible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (!testMode) delay(300)
@@ -303,3 +303,4 @@ fun HeaderSection(onGetInClick: () -> Unit, testMode: Boolean = false) {
 private fun IntroScreenPreview() {
     IntroScreen(onGetInClick = {})
 }
+
