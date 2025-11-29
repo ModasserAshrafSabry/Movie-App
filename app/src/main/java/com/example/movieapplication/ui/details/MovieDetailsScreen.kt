@@ -44,10 +44,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -477,91 +479,66 @@ fun MovieDetailsScreen(
                             }
 
                             if (showRatingDialog) {
-                                Dialog(onDismissRequest = { showRatingDialog = false }) {
-                                    Box(modifier = Modifier.fillMaxSize()) {
-                                        // 1️⃣ Full-screen blurred background
+                                Dialog(onDismissRequest = { showRatingDialog = false },
+
+                                        properties = DialogProperties(usePlatformDefaultWidth = false)
+                                ) {
+
+                                    BlurredDialogBackground(
+                                        imageUrl = "https://image.tmdb.org/t/p/w500${movieDetails?.posterPath}",
+                                        blurRadius = 10.dp,
+                                        onClose = { showRatingDialog = false }
+                                    ) {
+
+                                        // Title
+                                        Text(
+                                            text = "Rate This Movie",
+                                            color = Color.White,
+                                            fontSize = 22.sp
+                                        )
+
+                                        Spacer(modifier = Modifier.height(12.dp))
+
+                                        // Poster
+                                        val posterUrl = movieDetails?.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" }
                                         Image(
-                                            painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/w500${movieDetails?.posterPath}"),
-                                            contentDescription = null,
-                                            contentScale = ContentScale.Crop,
+                                            painter = rememberAsyncImagePainter(posterUrl),
+                                            contentDescription = "Poster",
                                             modifier = Modifier
-                                                .fillMaxSize()
-                                                .blur(10.dp)
+                                                .size(200.dp, 300.dp)
+                                                .clip(RoundedCornerShape(12.dp)),
+                                            contentScale = ContentScale.Crop
                                         )
 
-                                        // Semi-transparent overlay on top of blur
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .background(Color(0xFF2D2D2D).copy(alpha = 0.4f))
-                                        )
+                                        Spacer(modifier = Modifier.height(24.dp))
 
-                                        // Foreground UI (poster, stars, X button) remains sharp
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.fillMaxSize()
-                                        ) {
-                                            // X Button
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(44.dp)
-                                                    .align(Alignment.End)
-                                                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
-                                                    .clickable { showRatingDialog = false },
-                                                contentAlignment = Alignment.Center
-                                            ) {
+                                        // ⭐ Stars rating
+                                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            (1..5).forEach { index ->
                                                 Icon(
-                                                    imageVector = Icons.Default.Close,
-                                                    contentDescription = "Close",
-                                                    tint = Color.White,
-                                                    modifier = Modifier.size(24.dp)
+                                                    imageVector = Icons.Default.Star,
+                                                    contentDescription = "Star $index",
+                                                    tint = if (index <= userRating) Color(0xFFFFEB3B) else Color.Gray,
+                                                    modifier = Modifier
+                                                        .size(28.dp)
+                                                        .clickable { userRating = index }
                                                 )
                                             }
-
-                                            Spacer(modifier = Modifier.height(16.dp))
-
-                                            // Big poster
-                                            val posterUrl = movieDetails?.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" }
-                                            Image(
-                                                painter = rememberAsyncImagePainter(posterUrl),
-                                                contentDescription = "Poster",
-                                                modifier = Modifier
-                                                    .size(200.dp, 300.dp)
-                                                    .clip(RoundedCornerShape(12.dp)),
-                                                contentScale = ContentScale.Crop
-                                            )
-
-                                            Spacer(modifier = Modifier.height(24.dp))
-
-                                            // Stars Row
-                                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                                (1..5).forEach { index ->
-                                                    Icon(
-                                                        imageVector = Icons.Default.Star,               // <-- Material icon
-                                                        contentDescription = "Star $index",
-                                                        tint = if (index <= userRating) Color(
-                                                            0xFFFFEB3B
-                                                        ) else Color.Gray,
-                                                        modifier = Modifier
-                                                            .size(28.dp)                                // adjust size here
-                                                            .clickable { userRating = index }
-                                                    )
-                                                }
-                                            }
-
-                                            Spacer(modifier = Modifier.height(16.dp))
-
-                                            // Optional: display rating text
-                                            Text(
-                                                text = "Your Rating: $userRating/5",
-                                                color = Color.White,
-                                                fontSize = 16.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
                                         }
+
+                                        Spacer(modifier = Modifier.height(16.dp))
+
+                                        // Rating text
+                                        Text(
+                                            text = "Your Rating: $userRating/5",
+                                            color = Color.White,
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     }
                                 }
                             }
+
 
                             // 🔹 Column 3 — Rating + Votes
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -900,3 +877,66 @@ private fun formatRuntime(totalMinutes: Int): String {
     val minutes = totalMinutes % 60
     return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
 }
+@Composable
+fun BlurredDialogBackground(
+    imageUrl: String,
+    blurRadius: Dp = 12.dp,
+    onClose: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        // 1️⃣ Blurred full-screen background
+        Image(
+            painter = rememberAsyncImagePainter(imageUrl),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(blurRadius)
+        )
+
+        // 2️⃣ Dark semi-transparent overlay
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF2D2D2D).copy(alpha = 0.4f))
+        )
+
+        // 3️⃣ Foreground UI (X button + content)
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            // X button at the top-right
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, end = 16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .align(Alignment.TopEnd)
+                        .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                        .clickable { onClose() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ⭐ User content (poster, rating UI, etc.)
+            content()
+        }
+    }
+}
+
