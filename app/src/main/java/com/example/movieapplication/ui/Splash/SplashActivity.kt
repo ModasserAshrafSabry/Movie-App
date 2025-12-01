@@ -142,7 +142,7 @@ class SplashActivity : ComponentActivity() {
             } else {
                 "Glad to have you here. Let's get you started!"
             }
-            val bitmap = BitmapFactory.decodeResource(resources, R.drawable.streamicon)
+            val bitmap = BitmapFactory.decodeResource(resources, R.drawable.stream3)
             // Slight delay ensures notification shows when app is foreground
             Handler(Looper.getMainLooper()).postDelayed({
                 val notification = NotificationCompat.Builder(this, CHANNEL_ID)
