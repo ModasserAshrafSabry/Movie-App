@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">Movie app</string>
+    <string name="app_name">movie application</string>
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_signup">SignupActivity</string>
+    <string name="title_activity_signin">SigninActivity</string>
+    <string name="title_activity_hgjhbjk">hgjhbjk</string>
+    <string name="title_activity_jhjjjjjjjjj">jhjjjjjjjjj</string>
+    <string name="title_activity_ddddddddddddddddddddd">ddddddddddddddddddddd</string>
+    <string name="title_activity_fav_celeb_genre">FavCeleb_Genre</string>
 </resources>
