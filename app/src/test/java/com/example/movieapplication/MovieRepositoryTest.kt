@@ -125,6 +125,7 @@ class MovieRepositoryTest {
             posterPath = "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
             videos = null,
             voteAverage = 8.8,
+            voteCount = 0,
             backdropPath = null,
             releaseDate = "1999-10-15",
             genres = emptyList(),

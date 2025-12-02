@@ -66,7 +66,7 @@ fun MainNavigationScaffold(
         AppNavigation(
             viewModel = viewModel,
             navController = navController,
-            modifier = Modifier.padding(),
+            modifier = Modifier.padding(innerPadding),
             onLogout = onLogout
         )
     }
